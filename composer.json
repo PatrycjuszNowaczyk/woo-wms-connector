@@ -1,0 +1,19 @@
+{
+  "name": "patrycjusz-nowaczyk/woo-wms-connector",
+  "description": "Connect WooCommerce to WMS",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "WooWMS\\": "WooWMS/"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "composer dump-autoload"
+    ]
+  }
+}
