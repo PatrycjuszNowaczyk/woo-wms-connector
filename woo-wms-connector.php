@@ -11,6 +11,8 @@
 * WC requires at least: 3.0.0
 */
 
+require_once plugin_dir_path(__FILE__) . 'functions.php';
+
 defined('ABSPATH') || exit;
 
 const WOO_WMS_NSP = 'WooWMS';
