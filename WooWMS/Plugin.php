@@ -39,7 +39,7 @@ class Plugin {
 		$logicas = new Logicas( self::$settings );
 		
 		// Hook events.
-		// Get stocks on order creation.
-		add_action( 'woocommerce_payment_complete', [ $logicas, 'createOrder' ] );
+		add_action( 'woocommerce_payment_complete', [ $logicas, 'create_order' ] );
+		add_action('save_post_order_shop', [ $logicas, 'update_order' ], 10, 3);
 	}
 }

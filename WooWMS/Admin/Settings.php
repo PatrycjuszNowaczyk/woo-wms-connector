@@ -8,6 +8,7 @@ class Settings {
 	
 	private static array $settings = [
 		'woo_wms_warehouse_id'         => null,
+    'woo_wms_warehouse_code'       => null,
 		'woo_wms_base_api_url'         => null,
 		'woo_wms_store_api_token'      => null,
 		'woo_wms_management_api_token' => null
@@ -110,6 +111,14 @@ class Settings {
 	public function getWarehouseId(): int|null {
 		return (int) self::$settings['woo_wms_warehouse_id'] ?? null;
 	}
+ 
+	/**
+   * Get warehouse code
+	 * @return string|null
+	 */
+	public function getWarehouseCode(): string|null {
+		return self::$settings['woo_wms_warehouse_code'] ?? null;
+	}
 	/*------------------------------------------------------------------------------------------------------------------*/
 	// Getters END
 	
@@ -140,6 +149,7 @@ class Settings {
                 name="woo_wms_base_api_url"
                 value="<?php echo self::$settings['woo_wms_base_api_url']; ?>"
                 class="large-text"
+                required
               />
             </td>
           </tr>
@@ -156,6 +166,7 @@ class Settings {
                 name="woo_wms_store_api_token"
                 value="<?php echo self::$settings['woo_wms_store_api_token']; ?>"
                 class="large-text"
+                required
               />
             </td>
           </tr>
@@ -172,6 +183,7 @@ class Settings {
                 name="woo_wms_management_api_token"
                 value="<?php echo self::$settings['woo_wms_management_api_token']; ?>"
                 class="large-text"
+                required
               />
             </td>
           </tr>
@@ -188,6 +200,24 @@ class Settings {
                 name="woo_wms_warehouse_id"
                 value="<?php echo self::$settings['woo_wms_warehouse_id']; ?>"
                 class=""
+                required
+              />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">
+              <label for="woo_wms_warehouse_code">
+                WAREHOUSE CODE
+              </label>
+            </th>
+            <td>
+              <input
+                id="woo_wms_warehouse_code"
+                type="text"
+                name="woo_wms_warehouse_code"
+                value="<?php echo self::$settings['woo_wms_warehouse_code']; ?>"
+                class=""
+                required
               />
             </td>
           </tr>
