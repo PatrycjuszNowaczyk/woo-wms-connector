@@ -10,7 +10,7 @@ add_action('woocommerce_admin_order_item_headers', 'display_custom_field_in_admi
  */
 function display_custom_field_in_admin_order(WC_Order $order): void {
 	// Retrieve the custom field value
-	$custom_field_value = $order->get_meta('wms_logicas_order_id');
+	$custom_field_value = $order->get_meta( Logicas::$META_WMS_LOGICAS_ORDER_ID );
 	
 	// Check if the custom field has a value
 	if (empty($custom_field_value)) {
