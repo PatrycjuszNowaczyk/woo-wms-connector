@@ -1,5 +1,7 @@
 <?php
 
+use WooWMS\Services\Logicas;
+
 add_action('woocommerce_admin_order_item_headers', 'display_custom_field_in_admin_order');
 /**
  * Display WMS Order ID and create order button in the admin order
