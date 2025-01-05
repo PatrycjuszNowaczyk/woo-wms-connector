@@ -7,6 +7,10 @@ use WooWMS\Admin\Settings;
 use WooWMS\Utils\Logger;
 
 class Logicas {
+	static string $META_WMS_LOGICAS_ORDER_ID = 'wms_logicas_order_id';
+	
+	static string $META_PARCEL_MACHINE_ID = 'parcel_machine_id';
+	
 	private string $apiBaseUrl;
 	
 	private int $warehouseId;
