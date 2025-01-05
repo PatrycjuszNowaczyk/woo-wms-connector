@@ -40,6 +40,11 @@ class Plugin {
 		
 		// Hook events.
 		add_action( 'woocommerce_payment_complete', [ $logicas, 'create_order' ] );
+		
 		add_action('save_post_order_shop', [ $logicas, 'update_order' ], 10, 3);
+		
+		add_action('wp_ajax_woo_wms_create_order', function () use ( $logicas ) {
+			$logicas->create_order( (int) $_GET['order_id'] );
+		});
 	}
 }
