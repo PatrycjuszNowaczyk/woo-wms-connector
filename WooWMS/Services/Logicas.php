@@ -179,7 +179,7 @@ class Logicas {
 				throw new \Exception( 'Order not created: ' . json_encode( $orderData ) );
 			}
 			
-			$order->update_meta_data('wms_logicas_order_id', $orderResponse->id);
+			$order->update_meta_data( self::$META_WMS_LOGICAS_ORDER_ID, $orderResponse->id );
 			$order->save();
 			
 			$this->logger->info( 'Order data: ' . json_encode( $orderResponse ) );
