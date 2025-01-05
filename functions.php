@@ -183,7 +183,7 @@ function add_inpost_geowidget_map(): void {
       class="mt-4 mb-2 custom-checkout-text text-center"
     >
       <p>
-				<?= __('Please select a parcel locker location from the map.', 'bootscore-drhunt') ?>
+				<?= __('Please select a parcel locker location from the map.', WOO_WMS_TEXT_DOMAIN) ?>
       </p>
     </div>
     <button type="button" id="inpost_geowidget_button">click me</button>
@@ -331,7 +331,7 @@ add_filter('woocommerce_shipping_fields', 'add_shipping_fields', 10, 1);
 function add_shipping_fields(array $fields): array {
 	$fields['shipping_phone'] = array(
 		'type'        => 'tel',
-		'label'       => __('Shipping Phone', 'woocommerce'),
+		'label'       => __('Shipping Phone', WOO_WMS_TEXT_DOMAIN),
 		'required'    => true,
 		'class'       => array('form-row-wide'),
 		'priority'    => 110,
