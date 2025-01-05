@@ -101,7 +101,7 @@ class Logicas {
 	 *
 	 * @return object
 	 */
-	public function create_order( int $orderId ): object {
+	public function create_order( int $orderId ): void {
 		function create_products_order_array( array $items_to_send, string $sku, int $item_quantity ): array {
 			$key = array_search( $sku, array_column( $items_to_send, 'sku' ) );
 			if ( $key !== false ) {
@@ -123,9 +123,15 @@ class Logicas {
 				throw new \Exception( "Order nr $orderId not found" );
 			}
 			
+			$wms_logicas_order_id = $order->get_meta( self::$META_WMS_LOGICAS_ORDER_ID );
+			if ( ! empty( $wms_logicas_order_id ) ) {
+				throw new \Exception( "Order nr $orderId already created in Logicas with nr: " . $wms_logicas_order_id );
+			}
+			
 			// declare variables
 			$order_items   = $order->get_items();
 			$shipping_method = $this->get_shipping_method($order);
+			$parcel_machine_id = $order->get_meta( self::$META_PARCEL_MACHINE_ID );
 			$items_to_send = [];
 			
 			// add products to items_to_send
@@ -171,7 +177,7 @@ class Logicas {
 			];
 			
 			if ( 'inpost' === $shipping_method->id && 'inpost-locker-247' === $shipping_method->get_inpost_type() ) {
-				$orderData['shipping_address']['box_name'] = $_POST['parcel_machine_id'];
+				$orderData['shipping_address']['box_name'] = $parcel_machine_id ?: $_POST[ self::$META_PARCEL_MACHINE_ID ];
 			}
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders', 'POST', $orderData );
@@ -188,12 +194,28 @@ class Logicas {
 			
 			$this->logger->info( 'Ship data: ' . json_encode( $shipResponse ) );
 			
-			return $orderResponse;
+			if (
+				defined( 'DOING_AJAX' )
+				&& DOING_AJAX
+				&& isset( $_GET['action'] )
+				&& 'woo_wms_create_order' === $_GET['action']
+			) {
+				wp_send_json_success([
+					'message' => __('Order created', WOO_WMS_TEXT_DOMAIN)
+				], 200);
+			}
 			
 		} catch ( \Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 			
-			wp_die( $e->getMessage() );
+			if (
+				defined( 'DOING_AJAX' ) && DOING_AJAX
+				&& isset( $_GET['action'] ) && 'woo_wms_create_order' === $_GET['action']
+			) {
+				wp_send_json_error([
+					'message' => $e->getMessage()
+				], 500);
+			}
 		}
 	}
 	
