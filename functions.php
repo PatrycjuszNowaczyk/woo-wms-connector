@@ -18,8 +18,59 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
 	if (empty($custom_field_value)) {
 		$custom_field_value = 'N/A';
 	}
+ 
 	?>
-	<p class="text-center"><strong><?= __('WMS Order ID:', WOO_WMS_TEXT_DOMAIN) ?></strong><code><?= esc_html($custom_field_value) ?></code></p>
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #dfdfdf;
+      padding: 1.5em 2em;
+      background: #f8f8f8;
+      line-height: 2em;
+    "
+  >
+    <span>
+      <strong>
+        <?= __('WMS Order ID:', WOO_WMS_TEXT_DOMAIN) ?>
+      </strong>
+      <code>
+        <?= esc_html($custom_field_value) ?>
+      </code>
+    </span>
+	  <?php if ( 'N/A' === $custom_field_value ): ?>
+    <button type="button" id="woo_wms_create_order" class="button button-primary">
+      <?= __('Create Order', WOO_WMS_TEXT_DOMAIN) ?>
+    </button>
+    <?php endif; ?>
+  </div>
+	<?php if ( 'N/A' === $custom_field_value ): ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('woo_wms_create_order').addEventListener('click', function() {
+        const orderId = <?= $order->get_id() ?>;
+        const url = 'admin-ajax.php?action=woo_wms_create_order&order_id=' + orderId;
+        const originalText = this.textContent;
+        
+        this.disabled = true;
+        this.textContent = 'Creating...';
+        
+        fetch(url)
+          .then(response => response.json())
+          .then(res => {
+            if (res.success) {
+              alert('<?= __( 'Order created successfully!', WOO_WMS_TEXT_DOMAIN ) ?>');
+              window.location.reload();
+            } else {
+              alert('<?= __( 'Error creating order.', WOO_WMS_TEXT_DOMAIN ) ?>:\n\n' + res.data.message);
+              this.disabled = false;
+              this.textContent = originalText;
+            }
+          });
+      })
+    })
+  </script>
+	<?php endif; ?>
 	<?php
 }
 
