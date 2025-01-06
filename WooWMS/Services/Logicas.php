@@ -99,7 +99,7 @@ class Logicas {
 	 *
 	 * @param int $orderId
 	 *
-	 * @return object
+	 * @return void
 	 */
 	public function create_order( int $orderId ): void {
 		function create_products_order_array( array $items_to_send, string $sku, int $item_quantity ): array {
@@ -221,6 +221,14 @@ class Logicas {
 		}
 	}
 	
+	
+	/**
+	 * Update order in Logicas warehouse
+	 *
+	 * @param object $order
+	 *
+	 * @return void
+	 */
 	public function update_order( object $order ): void {
 		try {
 			if (
@@ -253,6 +261,11 @@ class Logicas {
 		}
 	}
 	
+	/**
+	 * Update woocommerce stocks in a database
+	 *
+	 * @return void
+	 */
 	public function update_shop_stocks(): void {
 		try {
 			$stocks = $this->request( $this->apiBaseUrl . '/management/v2/warehouse/' . $this->warehouseId . '/stocks/sellable' );
@@ -276,6 +289,13 @@ class Logicas {
 		}
 	}
 	
+	/**
+	 * Cancel order in Logicas warehouse
+	 *
+	 * @param object $order
+	 *
+	 * @return void
+	 */
 	public function cancel_order( object $order ): void {
 		try {
 			
