@@ -253,5 +253,25 @@ class Logicas {
 		$stocks = $this->request( $this->apiBaseUrl . '/management/v2/warehouse/' . $this->warehouseId . '/stocks' );
 		
 		return $stocks;
+	public function cancel_order( object $order ): void {
+		try {
+			
+			$order_id = $order->get_id();
+			$wms_order_id = $order->get_meta( self::$META_WMS_LOGICAS_ORDER_ID );
+			
+			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders/' . $wms_order_id . '/cancel', 'POST' );
+			
+			if ( false === is_array($orderResponse) && ! $orderResponse ) {
+				throw new \Exception( 'Order not canceled' );
+			}
+			
+			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
+		
+		} catch ( \Exception $e ) {
+			// add information on frontend in admin panel about not cancelling order
+			
+			$this->logger->error( $e->getMessage() );
+		}
+	}
 	}
 }
