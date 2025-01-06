@@ -205,6 +205,8 @@ class Logicas {
 				], 200);
 			}
 			
+			$this->update_shop_stocks();
+			
 		} catch ( \Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 			
@@ -243,16 +245,37 @@ class Logicas {
 			}
 			
 			$this->logger->info( 'Order data: ' . json_encode( $orderResponse ) );
+			
+			$this->update_shop_stocks();
+			
 		} catch ( \Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 		}
 	}
 	
-	public function get_stocks( $data ) {
-		echo $data;
-		$stocks = $this->request( $this->apiBaseUrl . '/management/v2/warehouse/' . $this->warehouseId . '/stocks' );
-		
-		return $stocks;
+	public function update_shop_stocks(): void {
+		try {
+			$stocks = $this->request( $this->apiBaseUrl . '/management/v2/warehouse/' . $this->warehouseId . '/stocks/sellable' );
+			if ( ! $stocks ) {
+				throw new \Exception( 'Stocks not found' );
+			}
+			
+			foreach ( $stocks->items as $stock ) {
+				// get product object by sku
+				$product = wc_get_product( wc_get_product_id_by_sku($stock->sku) );
+				if ( ! $product ) {
+					continue;
+				}
+				
+				$product->set_stock_quantity((int) $stock->quantity );
+				$product->save();
+			}
+			
+		} catch ( \Exception $e ) {
+			$this->logger->error( $e->getMessage() );
+		}
+	}
+	
 	public function cancel_order( object $order ): void {
 		try {
 			
@@ -266,7 +289,8 @@ class Logicas {
 			}
 			
 			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
-		
+			
+			$this->update_shop_stocks();
 		} catch ( \Exception $e ) {
 			// add information on frontend in admin panel about not cancelling order
 			
