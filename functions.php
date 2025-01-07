@@ -392,3 +392,67 @@ function add_shipping_fields(array $fields): array {
 
 	return $fields;
 }
+
+
+add_action( 'admin_notices', 'update_shop_stocks_button', 20 );
+/**
+ * Add a button to update all stocks in the shop all products page
+ *
+ * @return void
+ */
+function update_shop_stocks_button() {
+	// Get the current screen
+	$screen = get_current_screen();
+	
+	// Check if we're on the WooCommerce products page
+	if ( $screen && $screen->id === 'edit-product' ) {
+		?>
+    <div class="notice notice-info">
+      <p
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <span>
+          <?= __( 'To update all stocks in a shop click the button.', WOO_WMS_TEXT_DOMAIN ); ?>
+        </span>
+        <button type="button" id="woo_wms_update_shop_stocks" class="button button-primary">
+					<?= __( 'Update all stocks', WOO_WMS_TEXT_DOMAIN ); ?>
+        </button>
+      </p>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('woo_wms_update_shop_stocks').addEventListener('click', function () {
+                const isUpdating = confirm('<?= __( 'Are you sure you want to update all stocks? This may take a while.', WOO_WMS_TEXT_DOMAIN ); ?>');
+                if (!isUpdating) {
+                    return;
+                }
+
+                const url = 'admin-ajax.php?action=woo_wms_update_shop_stocks';
+                const originalText = this.textContent;
+
+                this.disabled = true;
+                this.textContent = '<?= __( 'Updating...', WOO_WMS_TEXT_DOMAIN ); ?>';
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(res => {
+                        console.log(res);
+                        if (res.success) {
+                            alert(res.data.message);
+                            window.location.reload();
+                        } else {
+                            alert('<?= __( 'Error updating stocks.', WOO_WMS_TEXT_DOMAIN ); ?>:\n\n' + res.data.message);
+                            this.disabled = false;
+                            this.textContent = originalText;
+                        }
+                    });
+            })
+        })
+    </script>
+		<?php
+	}
+}

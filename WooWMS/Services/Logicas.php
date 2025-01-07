@@ -284,8 +284,30 @@ class Logicas {
 				$product->save();
 			}
 			
+			if (
+				defined( 'DOING_AJAX' )
+				&& DOING_AJAX
+				&& isset( $_GET['action'] )
+				&& 'woo_wms_update_shop_stocks' === $_GET['action']
+			) {
+				wp_send_json_success([
+					'message' => __('Stocks updated successfully!', WOO_WMS_TEXT_DOMAIN)
+				], 200);
+			}
+			
 		} catch ( \Exception $e ) {
 			$this->logger->error( $e->getMessage() );
+			
+			if (
+				defined( 'DOING_AJAX' )
+				&& DOING_AJAX
+				&& isset( $_GET['action'] )
+				&& 'woo_wms_update_shop_stocks' === $_GET['action']
+			) {
+				wp_send_json_error([
+					'message' => $e->getMessage()
+				], 500);
+			}
 		}
 	}
 	
