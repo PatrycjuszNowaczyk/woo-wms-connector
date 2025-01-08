@@ -201,7 +201,7 @@ class Logicas {
 				&& 'woo_wms_create_order' === $_GET['action']
 			) {
 				wp_send_json_success([
-					'message' => __('Order created', WOO_WMS_TEXT_DOMAIN)
+					'message' => __('Order created', 'woo_wms_connector')
 				], 200);
 			}
 			
@@ -323,7 +323,7 @@ class Logicas {
 				&& 'woo_wms_update_shop_stocks' === $_GET['action']
 			) {
 				wp_send_json_success([
-					'message' => __('Stocks updated successfully!', WOO_WMS_TEXT_DOMAIN)
+					'message' => __('Stocks updated successfully!', 'woo_wms_connector')
 				], 200);
 			}
 			

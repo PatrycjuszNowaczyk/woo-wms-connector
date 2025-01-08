@@ -14,7 +14,6 @@
 defined('ABSPATH') || exit;
 
 const WOO_WMS_NSP = 'WooWMS';
-const WOO_WMS_TEXT_DOMAIN = 'woo_wms_connector';
 
 require_once plugin_dir_path(__FILE__) . 'functions.php';
 

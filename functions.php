@@ -32,7 +32,7 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
   >
     <span>
       <strong>
-        <?= __('WMS Order ID:', WOO_WMS_TEXT_DOMAIN) ?>
+        <?= __('WMS Order ID:', 'woo_wms_connector') ?>
       </strong>
       <code>
         <?= esc_html($custom_field_value) ?>
@@ -40,7 +40,7 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
     </span>
 	  <?php if ( 'N/A' === $custom_field_value ): ?>
     <button type="button" id="woo_wms_create_order" class="button button-primary">
-      <?= __('Create Order', WOO_WMS_TEXT_DOMAIN) ?>
+      <?= __('Create Order', 'woo_wms_connector') ?>
     </button>
     <?php endif; ?>
   </div>
@@ -59,10 +59,10 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
           .then(response => response.json())
           .then(res => {
             if (res.success) {
-              alert('<?= __( 'Order created successfully!', WOO_WMS_TEXT_DOMAIN ) ?>');
+              alert('<?= __( 'Order created successfully!', 'woo_wms_connector' ) ?>');
               window.location.reload();
             } else {
-              alert('<?= __( 'Error creating order.', WOO_WMS_TEXT_DOMAIN ) ?>:\n\n' + res.data.message);
+              alert('<?= __( 'Error creating order.', 'woo_wms_connector' ) ?>:\n\n' + res.data.message);
               this.disabled = false;
               this.textContent = originalText;
             }
@@ -135,14 +135,14 @@ function add_parcel_machine_id_editable_field( WC_Order $order ): void {
   <div class="clear"></div>
   <div class="address">
     <p>
-      <strong><?php esc_html_e( 'Parcel machine ID', WOO_WMS_TEXT_DOMAIN ); ?>:</strong>
+      <strong><?php esc_html_e( 'Parcel machine ID', 'woo_wms_connector' ); ?>:</strong>
       <code><?= $parcel_machine_id ? esc_attr( $parcel_machine_id ) : 'N/A'; ?></code>
     </p>
   </div>
   <div class="edit_address">
     <p class="form-field">
       <label for="parcel_machine_id">
-        <?php esc_html_e( 'Parcel machine ID', WOO_WMS_TEXT_DOMAIN ); ?>:
+        <?php esc_html_e( 'Parcel machine ID', 'woo_wms_connector' ); ?>:
       </label>
       <input
         type="text"
@@ -236,7 +236,7 @@ function add_inpost_geowidget_map(): void {
       class="mt-4 mb-2 custom-checkout-text text-center"
     >
       <p>
-				<?= __('Please select a parcel locker location from the map.', WOO_WMS_TEXT_DOMAIN) ?>
+				<?= __('Please select a parcel locker location from the map.', 'woo_wms_connector') ?>
       </p>
     </div>
 <!--  For testing purposes only  -->
@@ -370,7 +370,7 @@ function check_is_parcel_machine_id_required(): void {
 		&& 'inpost-locker-247' === $shipping_method->get_inpost_type()
 	) {
 		if ( empty( $_POST['parcel_machine_id'] ) ) {
-			wc_add_notice( __( 'To place an order, select the parcel locker location.', WOO_WMS_TEXT_DOMAIN ), 'error' );
+			wc_add_notice( __( 'To place an order, select the parcel locker location.', 'woo_wms_connector' ), 'error' );
 		}
 	}
 };
@@ -386,7 +386,7 @@ add_filter('woocommerce_shipping_fields', 'add_shipping_fields', 10, 1);
 function add_shipping_fields(array $fields): array {
 	$fields['shipping_phone'] = array(
 		'type'        => 'tel',
-		'label'       => __('Shipping Phone', WOO_WMS_TEXT_DOMAIN),
+		'label'       => __('Shipping Phone', 'woo_wms_connector'),
 		'required'    => true,
 		'class'       => array('form-row-wide'),
 		'priority'    => 110,
@@ -418,17 +418,17 @@ function update_shop_stocks_button() {
         "
       >
         <span>
-          <?= __( 'To update all stocks in a shop click the button.', WOO_WMS_TEXT_DOMAIN ); ?>
+          <?= __( 'To update all stocks in a shop click the button.', 'woo_wms_connector' ); ?>
         </span>
         <button type="button" id="woo_wms_update_shop_stocks" class="button button-primary">
-					<?= __( 'Update all stocks', WOO_WMS_TEXT_DOMAIN ); ?>
+					<?= __( 'Update all stocks', 'woo_wms_connector' ); ?>
         </button>
       </p>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('woo_wms_update_shop_stocks').addEventListener('click', function () {
-                const isUpdating = confirm('<?= __( 'Are you sure you want to update all stocks? This may take a while.', WOO_WMS_TEXT_DOMAIN ); ?>');
+                const isUpdating = confirm('<?= __( 'Are you sure you want to update all stocks? This may take a while.', 'woo_wms_connector' ); ?>');
                 if (!isUpdating) {
                     return;
                 }
@@ -437,7 +437,7 @@ function update_shop_stocks_button() {
                 const originalText = this.textContent;
 
                 this.disabled = true;
-                this.textContent = '<?= __( 'Updating...', WOO_WMS_TEXT_DOMAIN ); ?>';
+                this.textContent = '<?= __( 'Updating...', 'woo_wms_connector' ); ?>';
 
                 fetch(url)
                     .then(response => response.json())
@@ -447,7 +447,7 @@ function update_shop_stocks_button() {
                             alert(res.data.message);
                             window.location.reload();
                         } else {
-                            alert('<?= __( 'Error updating stocks.', WOO_WMS_TEXT_DOMAIN ); ?>:\n\n' + res.data.message);
+                            alert('<?= __( 'Error updating stocks.', 'woo_wms_connector' ); ?>:\n\n' + res.data.message);
                             this.disabled = false;
                             this.textContent = originalText;
                         }

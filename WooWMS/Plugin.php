@@ -11,7 +11,7 @@ class Plugin {
 	
 	public static function init(): void {
 		// Load text domain.
-		load_plugin_textdomain( WOO_WMS_TEXT_DOMAIN, false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'woo_wms_connector', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		
 		// Initialize components.
 		self::$settings = Settings::init();

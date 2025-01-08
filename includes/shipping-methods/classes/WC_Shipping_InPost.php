@@ -23,8 +23,8 @@ class WC_Shipping_InPost extends WC_Shipping_Flat_Rate {
 	
 	public function init(): void {
 		$this->instance_form_fields = $this->init_instance_form_fields();
-		$this->method_title       = __( 'InPost', WOO_WMS_TEXT_DOMAIN );
-		$this->method_description = __( 'Choose the InPost shipping method.', WOO_WMS_TEXT_DOMAIN );
+		$this->method_title       = __( 'InPost', 'woo_wms_connector' );
+		$this->method_description = __( 'Choose the InPost shipping method.', 'woo_wms_connector' );
 		$this->id                 = 'inpost';
 		$this->title              = $this->get_option( 'title' );
 		$this->inpost_type        = $this->get_option( 'inpost_type' );
@@ -43,22 +43,22 @@ class WC_Shipping_InPost extends WC_Shipping_Flat_Rate {
 		$instance_form_fields = include WC()->plugin_path() . '/includes/shipping/flat-rate/includes/settings-flat-rate.php';
 		
 		$title_field = [
-			'title'       => __( 'Name', WOO_WMS_TEXT_DOMAIN ),
+			'title'       => __( 'Name', 'woo_wms_connector' ),
 			'type'        => 'text',
-			'description' => __( 'Your customers will see the name of this shipping method during checkout.', WOO_WMS_TEXT_DOMAIN ),
-			'default'     => __( 'InPost', WOO_WMS_TEXT_DOMAIN ),
-			'placeholder' => __( 'e.g. Inpost locker 24/7', WOO_WMS_TEXT_DOMAIN ),
+			'description' => __( 'Your customers will see the name of this shipping method during checkout.', 'woo_wms_connector' ),
+			'default'     => __( 'InPost', 'woo_wms_connector' ),
+			'placeholder' => __( 'e.g. Inpost locker 24/7', 'woo_wms_connector' ),
 			'desc_tip'    => true,
 		];
 		
 		$method_type_field = [
-			'title'       => __( 'InPost type', WOO_WMS_TEXT_DOMAIN ),
+			'title'       => __( 'InPost type', 'woo_wms_connector' ),
 			'type'        => 'select',
-			'description' => __( 'Select the InPost type for this shipping method.', WOO_WMS_TEXT_DOMAIN ),
+			'description' => __( 'Select the InPost type for this shipping method.', 'woo_wms_connector' ),
 			'default'     => 'inpost-locker-247',
 			'options'     => [
-				'inpost-locker-247' => __( 'Parcel locker 24/7', WOO_WMS_TEXT_DOMAIN ),
-				'none'              => __( 'None', WOO_WMS_TEXT_DOMAIN )
+				'inpost-locker-247' => __( 'Parcel locker 24/7', 'woo_wms_connector' ),
+				'none'              => __( 'None', 'woo_wms_connector' )
 			],
 			'desc_tip'    => true,
 		];

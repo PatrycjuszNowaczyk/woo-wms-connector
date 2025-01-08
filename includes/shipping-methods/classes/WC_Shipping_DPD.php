@@ -23,8 +23,8 @@ class WC_Shipping_DPD extends WC_Shipping_Flat_Rate {
 	
 	public function init(): void {
 		$this->instance_form_fields = $this->init_instance_form_fields();
-		$this->method_title         = __( 'DPD', WOO_WMS_TEXT_DOMAIN );
-		$this->method_description   = __( 'Choose the DPD shipping method.', WOO_WMS_TEXT_DOMAIN );
+		$this->method_title         = __( 'DPD', 'woo_wms_connector' );
+		$this->method_description   = __( 'Choose the DPD shipping method.', 'woo_wms_connector' );
 		$this->id                   = 'dpd';
 		$this->title                = $this->get_option( 'title' );
 		$this->dpd_type             = $this->get_option( 'dpd_type' );
@@ -43,22 +43,22 @@ class WC_Shipping_DPD extends WC_Shipping_Flat_Rate {
 		$instance_form_fields = include WC()->plugin_path() . '/includes/shipping/flat-rate/includes/settings-flat-rate.php';
 		
 		$title_field = [
-			'title'       => __( 'Name', WOO_WMS_TEXT_DOMAIN ),
+			'title'       => __( 'Name', 'woo_wms_connector' ),
 			'type'        => 'text',
-			'description' => __( 'Your customers will see the name of this shipping method during checkout.', WOO_WMS_TEXT_DOMAIN ),
-			'default'     => __( 'DPD', WOO_WMS_TEXT_DOMAIN ),
-			'placeholder' => __( 'e.g. DPD courier', WOO_WMS_TEXT_DOMAIN ),
+			'description' => __( 'Your customers will see the name of this shipping method during checkout.', 'woo_wms_connector' ),
+			'default'     => __( 'DPD', 'woo_wms_connector' ),
+			'placeholder' => __( 'e.g. DPD courier', 'woo_wms_connector' ),
 			'desc_tip'    => true,
 		];
 		
 		$inpost_type_field = [
-			'title'       => __( 'DPD type', WOO_WMS_TEXT_DOMAIN ),
+			'title'       => __( 'DPD type', 'woo_wms_connector' ),
 			'type'        => 'select',
-			'description' => __( 'Select the DHL type for this shipping method.', WOO_WMS_TEXT_DOMAIN ),
+			'description' => __( 'Select the DHL type for this shipping method.', 'woo_wms_connector' ),
 			'default'     => 'dpd-courier',
 			'options'     => [
-				'dpd-courier' => __( 'DPD courier', WOO_WMS_TEXT_DOMAIN ),
-				'none'        => __( 'None', WOO_WMS_TEXT_DOMAIN )
+				'dpd-courier' => __( 'DPD courier', 'woo_wms_connector' ),
+				'none'        => __( 'None', 'woo_wms_connector' )
 			],
 			'desc_tip'    => true,
 		];
