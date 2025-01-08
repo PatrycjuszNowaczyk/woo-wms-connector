@@ -5,18 +5,18 @@
 * Version: 1.0
 * Author: Patrycjusz Nowaczyk
 * Author URI: https://github.com/patrycjusznowaczyk
-* Text Domain: woo-wms-connector
+* Text Domain: woo_wms_connector
 * Domain Path: /languages
 * Requires Plugins: woocommerce
 * WC requires at least: 3.0.0
 */
 
-require_once plugin_dir_path(__FILE__) . 'functions.php';
-
 defined('ABSPATH') || exit;
 
 const WOO_WMS_NSP = 'WooWMS';
-const WOO_WMS_TEXT_DOMAIN = 'woo-wms-connector';
+const WOO_WMS_TEXT_DOMAIN = 'woo_wms_connector';
+
+require_once plugin_dir_path(__FILE__) . 'functions.php';
 
 // Autoload classes.
 spl_autoload_register(function ($class_name) {
