@@ -9,8 +9,9 @@ class Plugin {
 	private static ?Settings $settings = null;
 	
 	public static function init(): void {
-		// Load text domain.
-		load_plugin_textdomain( 'woo_wms_connector', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		// Load text domain for translations.
+		$dirname = dirname( plugin_basename( __FILE__ ) ) . '/../languages';
+		load_plugin_textdomain( 'woo_wms_connector', false, $dirname );
 		
 		// Initialize components.
 		self::$settings = Settings::init();
