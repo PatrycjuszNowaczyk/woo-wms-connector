@@ -135,14 +135,14 @@ function add_parcel_machine_id_editable_field( WC_Order $order ): void {
   <div class="clear"></div>
   <div class="address">
     <p>
-      <strong><?php esc_html_e( 'Parcel machine ID', 'text-domain' ); ?>:</strong>
+      <strong><?php esc_html_e( 'Parcel machine ID', WOO_WMS_TEXT_DOMAIN ); ?>:</strong>
       <code><?= $parcel_machine_id ? esc_attr( $parcel_machine_id ) : 'N/A'; ?></code>
     </p>
   </div>
   <div class="edit_address">
     <p class="form-field">
       <label for="parcel_machine_id">
-        <?php esc_html_e( 'Parcel machine ID', 'text-domain' ); ?>:
+        <?php esc_html_e( 'Parcel machine ID', WOO_WMS_TEXT_DOMAIN ); ?>:
       </label>
       <input
         type="text"
