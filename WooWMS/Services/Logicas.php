@@ -272,17 +272,49 @@ class Logicas {
 			if ( ! $stocks ) {
 				throw new \Exception( 'Stocks not found' );
 			}
+			$stocks = $stocks->items;
 			
-			foreach ( $stocks->items as $stock ) {
-				// get product object by sku
-				$product = wc_get_product( wc_get_product_id_by_sku($stock->sku) );
-				if ( ! $product ) {
+			$all_products = wc_get_products([
+				'status' => 'publish',
+				'limit'  => -1
+			]);
+			
+			foreach ($all_products as $product) {
+				if ($product->get_children()) {
+					foreach ($product->get_children() as $child) {
+						$all_products[] = wc_get_product( $child );
+					}
+				}
+			}
+			
+			foreach ($all_products as $product) {
+				if ( str_contains($product->get_sku(), '|') ) {
+					$skus = array_fill_keys(explode('|', $product->get_sku()), 0);
+					$skus = array_map('trim', $skus);
+					
+					foreach ( $skus as $sku => $qty ) {
+						$skus[$sku] = $stocks[
+							array_search($sku, array_column($stocks, 'sku') )
+						]->quantity;
+					}
+					
+					$minimal_quantity = min($skus);
+					$product->set_stock_quantity((int) $minimal_quantity);
+					$product->save();
+					
 					continue;
 				}
 				
-				$product->set_stock_quantity((int) $stock->quantity );
-				$product->save();
+				$stock_index = array_search($product->get_sku(), array_column($stocks, 'sku') );
+				
+				if ( $product->get_sku()) {
+					$product->set_stock_quantity(
+						$stock_index ? $stocks[ $stock_index ]->quantity : 0
+					);
+					$product->save();
+				}
 			}
+
 			
 			if (
 				defined( 'DOING_AJAX' )
@@ -296,7 +328,7 @@ class Logicas {
 			}
 			
 		} catch ( \Exception $e ) {
-			$this->logger->error( $e->getMessage() );
+			$this->logger->error( 'Stocks not updated: ' . $e->getMessage() );
 			
 			if (
 				defined( 'DOING_AJAX' )
