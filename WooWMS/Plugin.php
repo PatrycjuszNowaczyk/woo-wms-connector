@@ -3,7 +3,6 @@
 namespace WooWMS;
 
 use WooWMS\Admin\Settings;
-//use WooWMS\Cron\SyncOrders;
 use WooWMS\Services\Logicas;
 
 class Plugin {
@@ -15,7 +14,6 @@ class Plugin {
 		
 		// Initialize components.
 		self::$settings = Settings::init();
-//		SyncOrders::init();
 		
 		// Hook events.
 		self::hookEvents();
