@@ -50,7 +50,7 @@ class Plugin {
 			}
 		}, 10, 4 );
 		
-		add_action('woocommerce_before_product_object_save', [ $logicas, 'update_product' ], 10, 1);
+//		add_action('woocommerce_before_product_object_save', [ $logicas, 'update_product' ], 10, 1);
 		
 		// AJAX actions
 		add_action('wp_ajax_woo_wms_update_shop_stocks', [ $logicas, 'update_shop_stocks' ]);
