@@ -239,7 +239,8 @@ function add_inpost_geowidget_map(): void {
 				<?= __('Please select a parcel locker location from the map.', WOO_WMS_TEXT_DOMAIN) ?>
       </p>
     </div>
-    <button type="button" id="inpost_geowidget_button">click me</button>
+<!--  For testing purposes only  -->
+<!--    <button type="button" id="inpost_geowidget_button">click me</button>-->
     <inpost-geowidget
       id="geowidget"
       class="d-block"
@@ -325,7 +326,7 @@ function add_inpost_geowidget_map(): void {
               inpostParcelId.value = point.name;
           }
 
-
+/*         // for testing purposes only
           const inpostGeoWidgetButton = document.getElementById('inpost_geowidget_button');
 
           inpostGeoWidgetButton.onclick = () => handlePointSelection(
@@ -340,6 +341,7 @@ function add_inpost_geowidget_map(): void {
                   }
               }
           );
+ */
 
           document.addEventListener('onpointselect', handlePointSelection);
       })();
