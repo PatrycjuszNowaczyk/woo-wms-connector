@@ -376,11 +376,23 @@ class Logicas {
 			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
 			
 			$this->update_shop_stocks();
+			
+			add_action('admin_notices', function () use ($order_id) {
+				echo '<div class="notice notice-success is-dismissible">
+					<p>' . sprintf(__('Order nr %s was successfully canceled in WMS', 'woo_wms_connector'), $order_id) . '</p>
+				</div>';
+			}, 0, 0);
+			
+			
 		} catch ( \Exception $e ) {
-			// add information on frontend in admin panel about not cancelling order
+			
+			add_action('admin_notices', function () use ($order_id) {
+				echo '<div class="notice notice-warning is-dismissible">
+					<p>' . sprintf(__('Order nr %s was not canceled in Logicas warehouse', 'woo_wms_connector'), $order_id) . '</p>
+				</div>';
+			}, 0, 0);
 			
 			$this->logger->error( $e->getMessage() );
 		}
-	}
 	}
 }
