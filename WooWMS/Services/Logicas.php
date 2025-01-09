@@ -194,11 +194,12 @@ class Logicas {
 			$order->update_meta_data( self::$META_WMS_LOGICAS_ORDER_ID, $orderResponse->id );
 			$order->save();
 			
-			$this->logger->info( 'Order data: ' . json_encode( $orderResponse ) );
+			$this->logger->info( 'Order data send to WMS: ' . json_encode( $orderData ) );
+			$this->logger->info( 'Order data in WMS: ' . json_encode( $orderResponse ) );
 			
 			$shipResponse = $this->request($this->apiBaseUrl . '/store/v2/orders/' . $orderResponse->id . '/ship', 'POST');
 			
-			$this->logger->info( 'Ship data: ' . json_encode( $shipResponse ) );
+			$this->logger->info( 'Ship data in WMS: ' . json_encode( $shipResponse ) );
 			
 			if (
 				defined( 'DOING_AJAX' )
