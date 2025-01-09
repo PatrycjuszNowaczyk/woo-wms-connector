@@ -56,5 +56,8 @@ class Plugin {
 		add_action('wp_ajax_woo_wms_create_order', function () use ( $logicas ) {
 			$logicas->create_order( (int) $_GET['order_id'] );
 		});
+		
+		// Custom CRON actions
+		add_action( 'woo_wms_cron_create_order', [ $logicas, 'create_order' ] );
 	}
 }
