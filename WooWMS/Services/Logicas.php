@@ -67,15 +67,19 @@ class Logicas {
 			}
 			
 			$response = wp_remote_request( $url, $args );
+			$response_code = wp_remote_retrieve_response_code( $response );
 			
-			if ( is_wp_error( $response ) ) {
+			if ( is_wp_error( $response )) {
 				throw new \Exception( $response->get_error_message() );
+			} else if ( 400 <= $response_code) {
+				throw new \Exception( wp_remote_retrieve_body( $response ) );
 			}
 			
 			return json_decode( wp_remote_retrieve_body( $response ) );
 		} catch ( \Exception $e ) {
 			$this->logger->error( $e->getMessage() );
-			wp_die( $e->getMessage() );
+			throw new \Exception( $e->getMessage() );
+//			wp_die( $e->getMessage() );
 		}
 	}
 	
