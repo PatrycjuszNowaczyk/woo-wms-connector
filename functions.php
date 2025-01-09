@@ -239,8 +239,11 @@ function add_inpost_geowidget_map(): void {
 				<?= __('Please select a parcel locker location from the map.', 'woo_wms_connector') ?>
       </p>
     </div>
-<!--  For testing purposes only  -->
-<!--    <button type="button" id="inpost_geowidget_button">click me</button>-->
+	  
+	  <?php if ( defined( 'WP_ENVIRONMENT_TYPE' ) && 'development' === WP_ENVIRONMENT_TYPE ) : ?>
+      <button type="button" id="inpost_geowidget_button">click me</button>
+	  <?php endif; ?>
+    
     <inpost-geowidget
       id="geowidget"
       class="d-block"
@@ -325,8 +328,8 @@ function add_inpost_geowidget_map(): void {
               geoWidgetInfo.innerHTML = selected_point_data;
               inpostParcelId.value = point.name;
           }
-
-/*         // for testing purposes only
+	      
+	      <?php if (defined( 'WP_ENVIRONMENT_TYPE' ) && 'development' === WP_ENVIRONMENT_TYPE) : ?>
           const inpostGeoWidgetButton = document.getElementById('inpost_geowidget_button');
 
           inpostGeoWidgetButton.onclick = () => handlePointSelection(
@@ -341,7 +344,7 @@ function add_inpost_geowidget_map(): void {
                   }
               }
           );
- */
+	      <?php endif; ?>
 
           document.addEventListener('onpointselect', handlePointSelection);
       })();
