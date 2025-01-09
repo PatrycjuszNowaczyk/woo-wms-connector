@@ -40,8 +40,7 @@ class Plugin {
 		// Hook events.
 		add_action( 'woocommerce_payment_complete', [ $logicas, 'create_order' ] );
 		
-		add_action('save_post_order_shop', [ $logicas, 'update_order' ], 10, 3);
-		
+		add_action( 'save_post_order_shop', [ $logicas, 'update_order' ], 10, 3 );
 		
 		add_action( 'woocommerce_order_status_changed', function ( $order_id, $old_status, $new_status, $order ) use ( $logicas ) {
 			if ( $new_status === 'cancelled' ) {
