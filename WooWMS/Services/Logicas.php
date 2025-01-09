@@ -83,7 +83,7 @@ class Logicas {
 		}
 	}
 	
-	private function get_shipping_method(object $order): object {
+	private function get_shipping_method(object $order): object|bool {
 		$shipping_method_name = $order->get_shipping_method();
 		$shipping_methods     = $order->get_shipping_methods();
 		$shipping_instance_id = null;
@@ -106,18 +106,20 @@ class Logicas {
 	 * @return void
 	 */
 	public function create_order( int $orderId ): void {
-		function create_products_order_array( array $items_to_send, string $sku, int $item_quantity ): array {
-			$key = array_search( $sku, array_column( $items_to_send, 'sku' ) );
-			if ( $key !== false ) {
-				$items_to_send[ $key ]['qty'] = $items_to_send[ $key ]['qty'] + $item_quantity;
-			} else {
-				$items_to_send[] = [
-					'sku' => $sku,
-					'qty' => $item_quantity
-				];
+		if ( ! function_exists( 'WooWMS\Services\create_products_order_array' ) ) {
+			function create_products_order_array( array $items_to_send, string $sku, int $item_quantity ): array {
+				$key = array_search( $sku, array_column( $items_to_send, 'sku' ) );
+				if ( $key !== false ) {
+					$items_to_send[ $key ]['qty'] = $items_to_send[ $key ]['qty'] + $item_quantity;
+				} else {
+					$items_to_send[] = [
+						'sku' => $sku,
+						'qty' => $item_quantity
+					];
+				}
+				
+				return $items_to_send;
 			}
-			
-			return $items_to_send;
 		}
 		
 		try {
