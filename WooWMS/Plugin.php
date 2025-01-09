@@ -43,11 +43,11 @@ class Plugin {
 		add_action( 'save_post_order_shop', [ $logicas, 'update_order' ], 10, 3 );
 		
 		add_action( 'woocommerce_order_status_changed', function ( $order_id, $old_status, $new_status, $order ) use ( $logicas ) {
-			if ( $new_status === 'cancelled' ) {
+			if ( in_array( $new_status, [ 'on-hold', 'cancelled', 'refunded', 'failed', 'checkout-draft' ] ) ) {
 				$logicas->cancel_order( $order );
 			}
 		}, 10, 4 );
-		
+
 //		add_action('woocommerce_before_product_object_save', [ $logicas, 'update_product' ], 10, 1);
 		
 		// AJAX actions
