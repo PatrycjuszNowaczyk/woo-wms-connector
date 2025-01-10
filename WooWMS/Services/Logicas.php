@@ -10,6 +10,8 @@ use WooWMS\Utils\Logger;
 class Logicas {
 	static string $META_WMS_LOGICAS_ORDER_ID = 'wms_logicas_order_id';
 	
+	static string $META_WMS_LOGICAS_IS_CANCELLED = 'wms_logicas_is_order_cancelled';
+	
 	static string $META_PARCEL_MACHINE_ID = 'parcel_machine_id';
 	
 	private string $apiBaseUrl;
@@ -374,6 +376,9 @@ class Logicas {
 			if ( false === is_array($orderResponse) && ! $orderResponse ) {
 				throw new Exception( 'Order not canceled' );
 			}
+			
+			$order->update_meta_data( self::$META_WMS_LOGICAS_IS_CANCELLED, 1 );
+			$order->save();
 			
 			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
 			
