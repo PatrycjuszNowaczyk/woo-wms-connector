@@ -2,6 +2,7 @@
 
 namespace WooWMS\Services;
 
+use Exception;
 use WC_Shipping_Zones;
 use WooWMS\Admin\Settings;
 use WooWMS\Utils\Logger;
@@ -52,6 +53,8 @@ class Logicas {
 	 * @param array|null $data
 	 *
 	 * @return mixed|void
+	 *
+	 * @throws Exception
 	 */
 	private function request( string $url, string $method = 'GET', array $data = null ) {
 		try {
@@ -70,15 +73,15 @@ class Logicas {
 			$response_code = wp_remote_retrieve_response_code( $response );
 			
 			if ( is_wp_error( $response )) {
-				throw new \Exception( $response->get_error_message() );
+				throw new Exception( $response->get_error_message() );
 			} else if ( 400 <= $response_code) {
-				throw new \Exception( wp_remote_retrieve_body( $response ) );
+				throw new Exception( wp_remote_retrieve_body( $response ) );
 			}
 			
 			return json_decode( wp_remote_retrieve_body( $response ) );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
-			throw new \Exception( $e->getMessage() );
+			throw new Exception( $e->getMessage() );
 //			wp_die( $e->getMessage() );
 		}
 	}
@@ -126,12 +129,12 @@ class Logicas {
 			// get order object by id
 			$order = wc_get_order( $orderId );
 			if ( ! $order ) {
-				throw new \Exception( "Order nr $orderId not found" );
+				throw new Exception( "Order nr $orderId not found" );
 			}
 			
 			$wms_logicas_order_id = $order->get_meta( self::$META_WMS_LOGICAS_ORDER_ID );
 			if ( ! empty( $wms_logicas_order_id ) ) {
-				throw new \Exception( "Order nr $orderId already created in Logicas with nr: " . $wms_logicas_order_id );
+				throw new Exception( "Order nr $orderId already created in Logicas with nr: " . $wms_logicas_order_id );
 			}
 			
 			// declare variables
@@ -188,7 +191,7 @@ class Logicas {
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders', 'POST', $orderData );
 			if ( ! $orderResponse ) {
-				throw new \Exception( 'Order not created: ' . json_encode( $orderData ) );
+				throw new Exception( 'Order not created: ' . json_encode( $orderData ) );
 			}
 			
 			$order->update_meta_data( self::$META_WMS_LOGICAS_ORDER_ID, $orderResponse->id );
@@ -214,7 +217,7 @@ class Logicas {
 			
 			$this->update_shop_stocks();
 			
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 			
 			if (
@@ -256,14 +259,14 @@ class Logicas {
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders/' . $order['id'], 'PUT', $orderData );
 			if ( ! $orderResponse ) {
-				throw new \Exception( 'Order not updated' );
+				throw new Exception( 'Order not updated' );
 			}
 			
 			$this->logger->info( 'Order data: ' . json_encode( $orderResponse ) );
 			
 			$this->update_shop_stocks();
 			
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 		}
 	}
@@ -277,7 +280,7 @@ class Logicas {
 		try {
 			$stocks = $this->request( $this->apiBaseUrl . '/management/v2/warehouse/' . $this->warehouseId . '/stocks/sellable' );
 			if ( ! $stocks ) {
-				throw new \Exception( 'Stocks not found' );
+				throw new Exception( 'Stocks not found' );
 			}
 			$stocks = $stocks->items;
 			
@@ -334,7 +337,7 @@ class Logicas {
 				], 200);
 			}
 			
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			$this->logger->error( 'Stocks not updated: ' . $e->getMessage() );
 			
 			if (
@@ -370,7 +373,7 @@ class Logicas {
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders/' . $wms_order_id . '/cancel', 'POST' );
 			
 			if ( false === is_array($orderResponse) && ! $orderResponse ) {
-				throw new \Exception( 'Order not canceled' );
+				throw new Exception( 'Order not canceled' );
 			}
 			
 			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
@@ -384,7 +387,7 @@ class Logicas {
 			}, 0, 0);
 			
 			
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			
 			add_action('admin_notices', function () use ($order_id) {
 				echo '<div class="notice notice-warning is-dismissible">
