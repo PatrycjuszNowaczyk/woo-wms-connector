@@ -12,11 +12,11 @@ add_action('woocommerce_admin_order_item_headers', 'display_custom_field_in_admi
  */
 function display_custom_field_in_admin_order(WC_Order $order): void {
 	// Retrieve the custom field value
-	$custom_field_value = $order->get_meta( Logicas::$META_WMS_LOGICAS_ORDER_ID );
+	$wms_order_id = $order->get_meta( Logicas::$META_WMS_LOGICAS_ORDER_ID );
 	
 	// Check if the custom field has a value
-	if (empty($custom_field_value)) {
-		$custom_field_value = 'N/A';
+	if (empty($wms_order_id)) {
+		$wms_order_id = 'N/A';
 	}
  
 	?>
@@ -35,16 +35,16 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
         <?= __('WMS Order ID:', 'woo_wms_connector') ?>
       </strong>
       <code>
-        <?= esc_html($custom_field_value) ?>
+        <?= esc_html($wms_order_id) ?>
       </code>
     </span>
-	  <?php if ( 'N/A' === $custom_field_value ): ?>
+	  <?php if ( 'N/A' === $wms_order_id ): ?>
     <button type="button" id="woo_wms_create_order" class="button button-primary">
       <?= __('Create Order', 'woo_wms_connector') ?>
     </button>
     <?php endif; ?>
   </div>
-	<?php if ( 'N/A' === $custom_field_value ): ?>
+	<?php if ( 'N/A' === $wms_order_id ): ?>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('woo_wms_create_order').addEventListener('click', function() {
