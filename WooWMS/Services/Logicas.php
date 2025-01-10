@@ -82,7 +82,6 @@ class Logicas {
 		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 			throw new Exception( $e->getMessage() );
-//			wp_die( $e->getMessage() );
 		}
 	}
 	
