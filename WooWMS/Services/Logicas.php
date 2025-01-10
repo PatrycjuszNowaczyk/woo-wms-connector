@@ -80,7 +80,6 @@ class Logicas {
 			
 			return json_decode( wp_remote_retrieve_body( $response ) );
 		} catch ( Exception $e ) {
-			$this->logger->error( $e->getMessage() );
 			throw new Exception( $e->getMessage() );
 		}
 	}
