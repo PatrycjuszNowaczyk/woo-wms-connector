@@ -169,7 +169,7 @@ class Logicas {
 			// prepare order data
 			$orderData = [
 				'warehouse_code'   => $this->warehouseCode,
-				'shipping_method'  => 'innoship.' . strtolower( $shipping_method->id ),
+				'shipping_method'  => 'innoship.' . strtolower( $shipping_method ? $shipping_method->id : '' ),
 				'shipping_address' => [
 					'zip'        => trim($order->get_shipping_postcode()),
 					'city'       => trim($order->get_shipping_city()),
@@ -186,7 +186,7 @@ class Logicas {
 				'items'            => $items_to_send
 			];
 			
-			if ( 'inpost' === $shipping_method->id && 'inpost-locker-247' === $shipping_method->get_inpost_type() ) {
+			if ( isset( $shipping_method->id ) && 'inpost' === $shipping_method->id && 'inpost-locker-247' === $shipping_method->get_inpost_type() ) {
 				$orderData['shipping_address']['box_name'] = $parcel_machine_id ?: $_POST[ self::$META_PARCEL_MACHINE_ID ];
 			}
 			
