@@ -84,6 +84,7 @@ class Logicas {
 		}
 	}
 	
+	// TODO fix getting shipping method for orders created in admin panel
 	private function get_shipping_method(object $order): object|bool {
 		$shipping_method_name = $order->get_shipping_method();
 		$shipping_methods     = $order->get_shipping_methods();
