@@ -320,7 +320,7 @@ class Logicas {
 				
 				if ( $product->get_sku()) {
 					$product->set_stock_quantity(
-						$stock_index ? $stocks[ $stock_index ]->quantity : 0
+						false !== $stock_index ? $stocks[ $stock_index ]->quantity : 0
 					);
 					$product->save();
 				}
