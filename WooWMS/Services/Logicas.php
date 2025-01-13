@@ -78,12 +78,15 @@ class Logicas {
 			if ( is_wp_error( $response )) {
 				throw new Exception( $response->get_error_message() );
 			} else if ( 400 <= $response_code) {
-				throw new Exception( wp_remote_retrieve_body( $response ) );
+				$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+				$message = $response_body['message'] ?? $response_body;
+				throw new Exception( $message );
 			}
 			
 			return json_decode( wp_remote_retrieve_body( $response ) );
 		} catch ( Exception $e ) {
-			throw new Exception( $e->getMessage() );
+			$error_message = __('Error from WMS API:', 'woo_wms_connector') . PHP_EOL . $e->getMessage();
+			throw new Exception( $error_message );
 		}
 	}
 	
