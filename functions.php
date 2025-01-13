@@ -26,7 +26,7 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
     style="
       border-bottom: 1px solid #dfdfdf;
       background: #f8f8f8;
-      padding: 1.5em 2em;
+      padding: 1.5em 1em 1.5em 2em;
     "
   >
   <div
@@ -63,6 +63,12 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
         >
           <?= __('Create Order', 'woo_wms_connector') ?>
         </button>
+        <span
+          class="woocommerce-help-tip"
+          data-tip="<?= __($create_order_tip, 'woo_wms_connector') ?>"
+          aria-label="<?= __($create_order_tip, 'woo_wms_connector') ?>"
+        ></span>
+      </div>
     <?php endif; ?>
   </div>
 	<?php if ( true === $is_wms_order_cancelled ) : ?>
