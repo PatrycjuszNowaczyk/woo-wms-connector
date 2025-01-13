@@ -53,7 +53,7 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
   </div>
 	<?php if ( true === $wms_is_order_cancelled ) : ?>
     <div>
-			<?= __('This order was cancelled in WMS.') ?>
+			<?= __('This order is cancelled in WMS.') ?>
     </div>
 	<?php endif ?>
   </div>
