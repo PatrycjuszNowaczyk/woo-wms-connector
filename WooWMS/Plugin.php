@@ -43,7 +43,7 @@ class Plugin {
 		add_action( 'save_post_order_shop', [ $logicas, 'update_order' ], 10, 3 );
 		
 		add_action( 'woocommerce_order_status_changed', function ( $order_id, $old_status, $new_status, $order ) use ( $logicas ) {
-			if ( in_array( $new_status, [ 'on-hold', 'cancelled', 'refunded', 'failed', 'checkout-draft' ] ) ) {
+			if ( in_array( $new_status, [ 'cancelled', 'refunded', 'failed' ] ) ) {
 				$logicas->cancel_order( $order );
 			}
 		}, 10, 4 );
