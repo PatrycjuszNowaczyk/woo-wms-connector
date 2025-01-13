@@ -372,8 +372,8 @@ class Logicas {
 	 */
 	public function cancel_order( object $order ): void {
 		try {
-			$is_wms_order = $order->get_meta( self::$META_WMS_LOGICAS_ORDER_ID );
-			if ( ! $is_wms_order ) {
+			$is_wms_order_cancelled = $order->get_meta( self::$META_WMS_LOGICAS_IS_CANCELLED );
+			if ( ! empty($is_wms_order_cancelled) ) {
 				return;
 			}
 			
