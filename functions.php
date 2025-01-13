@@ -14,6 +14,8 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
 	// Retrieve the custom field value
 	$wms_order_id = $order->get_meta( Logicas::$META_WMS_LOGICAS_ORDER_ID );
 	$is_wms_order_cancelled = ! empty( $order->get_meta( Logicas::$META_WMS_LOGICAS_IS_CANCELLED ) );
+  $order_status = $order->get_status();
+  
 	// Check if the custom field has a value
 	if (empty($wms_order_id)) {
 		$wms_order_id = 'N/A';
@@ -45,9 +47,22 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
       </div>
     </div>
 	  <?php if ( 'N/A' === $wms_order_id ): ?>
-    <button type="button" id="woo_wms_create_order" class="button button-primary">
-      <?= __('Create Order', 'woo_wms_connector') ?>
-    </button>
+      <?php
+        $create_order_tip = __('To create an order in the WMS system, the current order status must be set to completed.', 'woo_wms_connector');
+      ?>
+      <div>
+        <button
+          type="button"
+          id="woo_wms_create_order"
+          class="button button-primary"
+          <?= (
+          ( ! empty( $_GET['action'] ) && 'new' === $_GET['action'] )
+          || 'completed' !== $order_status
+            ? 'disabled="true"' : null
+          ) ?>
+        >
+          <?= __('Create Order', 'woo_wms_connector') ?>
+        </button>
     <?php endif; ?>
   </div>
 	<?php if ( true === $is_wms_order_cancelled ) : ?>
