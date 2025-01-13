@@ -167,6 +167,10 @@ class Logicas {
 				}
 			}
 			
+			if ( empty( $items_to_send ) ) {
+				throw new Exception( 'No products found in order with ID: ' . $orderId );
+			}
+			
 			// prepare order data
 			$orderData = [
 				'warehouse_code'   => $this->warehouseCode,
