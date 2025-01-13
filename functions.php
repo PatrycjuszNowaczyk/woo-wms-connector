@@ -13,7 +13,7 @@ add_action('woocommerce_admin_order_item_headers', 'display_custom_field_in_admi
 function display_custom_field_in_admin_order(WC_Order $order): void {
 	// Retrieve the custom field value
 	$wms_order_id = $order->get_meta( Logicas::$META_WMS_LOGICAS_ORDER_ID );
-	$is_wms_order_cancelled = ! empty( $order->get_meta( Logicas::$META_WMS_LOGICAS_IS_CANCELLED ) );
+	$is_wms_order_cancelled = ! empty( $order->get_meta( Logicas::$META_WMS_LOGICAS_IS_ORDER_CANCELLED ) );
   $order_status = $order->get_status();
   
 	// Check if the custom field has a value

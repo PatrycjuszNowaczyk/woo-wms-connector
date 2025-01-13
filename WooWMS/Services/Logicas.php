@@ -9,7 +9,9 @@ use WooWMS\Utils\Logger;
 class Logicas {
 	static string $META_WMS_LOGICAS_ORDER_ID = 'wms_logicas_order_id';
 	
-	static string $META_WMS_LOGICAS_IS_CANCELLED = 'wms_logicas_is_order_cancelled';
+	static string $META_WMS_LOGICAS_IS_ORDER_CANCELLED = 'wms_logicas_is_order_cancelled';
+	
+	static string $META_WMS_SHOP_CUSTOM_ORDER_ID = 'wms_shop_custom_order_id';
 	
 	static string $META_PARCEL_MACHINE_ID = 'parcel_machine_id';
 	
@@ -372,7 +374,7 @@ class Logicas {
 	 */
 	public function cancel_order( object $order ): void {
 		try {
-			$is_wms_order_cancelled = $order->get_meta( self::$META_WMS_LOGICAS_IS_CANCELLED );
+			$is_wms_order_cancelled = $order->get_meta( self::$META_WMS_LOGICAS_IS_ORDER_CANCELLED );
 			if ( ! empty($is_wms_order_cancelled) ) {
 				return;
 			}
@@ -386,7 +388,7 @@ class Logicas {
 				throw new Exception( 'Order not canceled' );
 			}
 			
-			$order->update_meta_data( self::$META_WMS_LOGICAS_IS_CANCELLED, 1 );
+			$order->update_meta_data( self::$META_WMS_LOGICAS_IS_ORDER_CANCELLED, 1 );
 			$order->save();
 			
 			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
