@@ -494,3 +494,86 @@ function update_shop_stocks_button() {
 		<?php
 	}
 }
+
+add_action('woocommerce_checkout_create_order', 'save_custom_order_number', 10, 1);
+add_action('woocommerce_new_order', function($id) {
+  $order = wc_get_order($id);
+  save_custom_order_number($order);
+}, 10, 1);
+/**
+ *
+ * On checkout create a custom order number and save it as meta data in the order.
+ *
+ * @param $order
+ *
+ * @return void
+ */
+function save_custom_order_number( $order ): void {
+	// Get the current time
+	$current_time = current_time('timestamp');
+	$month = date('m', $current_time); // Current month
+	$year = date('y', $current_time); // Current year in two digits
+	
+	// Get all orders for the current month
+	$args = [
+		'date_created' => '>' . date('Y-m-01 00:00:00', $current_time),
+		'return' => 'ids',
+    'limit' => -1
+	];
+	
+	$orders_this_month = wc_get_orders($args);
+	
+	// Count orders for this month, starting from 10
+	$nn = count($orders_this_month) + 10;
+	
+	// Create the custom order number
+	$custom_order_number = sprintf('%02d%02d%02d', $nn, $month, $year);
+	
+	// Save the custom order number as meta data
+	$order->update_meta_data( Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID, $custom_order_number );
+  $order->save();
+}
+
+add_filter('woocommerce_order_number', 'use_custom_order_number_on_frontend', 10, 2);
+/**
+ *
+ * On frontend use the custom order number if it exists in the order meta,
+ * otherwise use the default order number (ID) which is the order ID in WooCommerce by default.
+ *
+ * @param $order_id
+ * @param $order
+ *
+ * @return int|string
+ */
+function use_custom_order_number_on_frontend($order_id, $order): int|string {
+  
+  if ( is_admin()
+       && isset($_GET['action'])
+       && 'new' === $_GET['action']
+       && isset($_GET['page'])
+       && 'wc-orders' === $_GET['page']
+  ) {
+    return __('NEW', 'woo_wms_connector');
+  }
+  
+	$custom_order_number = $order->get_meta( Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID );
+	return ! empty($custom_order_number) ? $custom_order_number : $order_id;
+}
+
+add_filter( 'woocommerce_shop_order_search_fields', 'add_custom_meta_fields_to_search_fields' );
+add_filter( 'woocommerce_order_table_search_query_meta_keys', 'add_custom_meta_fields_to_search_fields' );
+/**
+ *
+ * Add custom meta fields to the search fields in the WooCommerce orders table search form.
+ * This allows to search orders by the custom meta fields.
+ *
+ * @param array $search_fields
+ *
+ * @return array
+ */
+function add_custom_meta_fields_to_search_fields( array $search_fields ): array {
+	// Add the custom meta key to the search fields
+	$search_fields[] = Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID;
+	
+	return $search_fields;
+}
