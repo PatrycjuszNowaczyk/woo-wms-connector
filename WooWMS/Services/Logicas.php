@@ -3,7 +3,6 @@
 namespace WooWMS\Services;
 
 use Exception;
-use WC_Shipping_Zones;
 use WooWMS\Admin\Settings;
 use WooWMS\Utils\Logger;
 
@@ -86,20 +85,16 @@ class Logicas {
 		}
 	}
 	
-	// TODO fix getting shipping method for orders created in admin panel
-	private function get_shipping_method(object $order): object|bool {
-		$shipping_method_name = $order->get_shipping_method();
-		$shipping_methods     = $order->get_shipping_methods();
-		$shipping_instance_id = null;
+	private function get_shipping_method(object $order): object|null {
+		$shipping_items = $order->get_items('shipping');
+		$shipping_item = null;
 		
-		// get selected shipping method instance id
-		foreach ( $shipping_methods as $method ) {
-			if ( str_contains( $method->get_name(), $shipping_method_name ) ) {
-				$shipping_instance_id   = $method->get_instance_id();
-			}
+		foreach ($shipping_items as $item) {
+			$shipping_item = $item;
+			break;
 		}
 		
-		return WC_Shipping_Zones::get_shipping_method($shipping_instance_id);
+		return $shipping_item;
 	}
 	
 	/**
@@ -141,7 +136,13 @@ class Logicas {
 			// declare variables
 			$order_items   = $order->get_items();
 			$shipping_method = $this->get_shipping_method($order);
-			$parcel_machine_id = $order->get_meta( self::$META_PARCEL_MACHINE_ID );
+			
+			if ( empty( $shipping_method ) ) {
+				throw new Exception( 'Shipping method not found in order with ID: ' . $orderId );
+			}
+			
+			$shipping_method_id = $shipping_method->get_method_id();
+			$parcel_machine_id = $order->get_meta( self::$META_PARCEL_MACHINE_ID ) ?: $_POST[ self::$META_PARCEL_MACHINE_ID ] ?? null;
 			$items_to_send = [];
 			
 			// add products to items_to_send
@@ -169,7 +170,7 @@ class Logicas {
 			// prepare order data
 			$orderData = [
 				'warehouse_code'   => $this->warehouseCode,
-				'shipping_method'  => 'innoship.' . strtolower( $shipping_method ? $shipping_method->id : '' ),
+				'shipping_method'  => 'innoship.' . strtolower( $shipping_method_id ),
 				'shipping_address' => [
 					'zip'        => trim($order->get_shipping_postcode()),
 					'city'       => trim($order->get_shipping_city()),
@@ -186,8 +187,8 @@ class Logicas {
 				'items'            => $items_to_send
 			];
 			
-			if ( isset( $shipping_method->id ) && 'inpost' === $shipping_method->id && 'inpost-locker-247' === $shipping_method->get_inpost_type() ) {
-				$orderData['shipping_address']['box_name'] = $parcel_machine_id ?: $_POST[ self::$META_PARCEL_MACHINE_ID ];
+			if ( 'inpost' === $shipping_method_id && ! empty($parcel_machine_id) ) {
+				$orderData['shipping_address']['box_name'] = $parcel_machine_id;
 			}
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders', 'POST', $orderData );
