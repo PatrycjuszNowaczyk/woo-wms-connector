@@ -230,6 +230,10 @@ class Logicas {
 					'message' => $e->getMessage()
 				], 500);
 			}
+			
+			if ( defined('WOO_WMS_DOING_CRON') && WOO_WMS_DOING_CRON ) {
+				echo 'Error: ' . $e->getMessage() . PHP_EOL;
+			}
 		}
 	}
 	
