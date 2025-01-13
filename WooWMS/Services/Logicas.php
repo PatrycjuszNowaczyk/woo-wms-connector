@@ -181,7 +181,7 @@ class Logicas {
 					'email'      => trim($order->get_billing_email()),
 					'line1'      => trim($order->get_shipping_address_1()),
 					'line2'      => trim($order->get_shipping_address_2()),
-					'phone'      => trim($order->get_billing_phone()),
+					'phone'      => trim($order->get_shipping_phone()),
 					'last_name'  => trim($order->get_shipping_last_name()),
 					'first_name' => trim($order->get_shipping_first_name()),
 					'country'    => trim($order->get_shipping_country())
