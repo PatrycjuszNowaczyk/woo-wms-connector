@@ -625,7 +625,12 @@ function populate_wms_order_status_column_with_initial_value( string $column ): 
  */
 add_action( 'admin_footer', 'update_wms_order_statuses' );
 function update_wms_order_statuses(): void {
-	if ( ! isset( $_GET['page'] ) && 'wc-orders' !== $_GET['page'] ) {
+	if (
+    false === is_admin()
+    || ! isset( $_GET['page'] )
+    && 'wc-orders' !== $_GET['page']
+    || true === isset( $_GET['action'] )
+  ) {
 		return;
 	}
 	
