@@ -440,7 +440,7 @@ class Logicas {
 				}
 				
 				if ( empty( $wms_order_id ) ) {
-					$orders_statuses[ $order_id ] = 'N/A';
+					$orders_statuses[ $order_id ] = '<code>N/A</code>';
 					continue;
 				}
 				

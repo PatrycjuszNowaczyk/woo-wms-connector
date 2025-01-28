@@ -654,7 +654,7 @@ function update_wms_order_statuses(): void {
             const orderStatusElement = document
             .querySelector( '#order-' + orderId )
             .querySelector( '.column-wms_order_status' );
-            orderStatusElement.textContent = status;
+            orderStatusElement.innerHTML = status;
           } );
         }
       } )
