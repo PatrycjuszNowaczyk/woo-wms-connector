@@ -59,6 +59,11 @@ class Plugin {
 			$logicas->create_order( (int) $_GET['order_id'] );
 		});
 		
+		add_action('wp_ajax_woo_wms_get_orders_statuses', function () use ( $logicas ) {
+			$orders_ids = explode(',', $_GET['orders_ids']);
+			$logicas->get_orders_statuses( $orders_ids );
+		});
+		
 		// Custom CRON actions
 		add_action( 'woo_wms_cron_create_order', [ $logicas, 'create_order' ] );
 	}

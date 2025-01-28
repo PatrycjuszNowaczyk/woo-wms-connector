@@ -577,3 +577,87 @@ function add_custom_meta_fields_to_search_fields( array $search_fields ): array 
 	
 	return $search_fields;
 }
+
+add_filter( 'manage_edit-shop_order_columns', 'add_wms_order_status_column', 10, 1 );
+add_filter( 'woocommerce_shop_order_list_table_columns', 'add_wms_order_status_column', 10, 1 );
+/**
+ *
+ * Add wms order status column to the orders table
+ *
+ * @param $columns
+ *
+ * @return array
+ */
+function add_wms_order_status_column( $columns ): array {
+	$new_columns = array();
+	foreach ( $columns as $key => $column ) {
+		$new_columns[ $key ] = $column;
+		if ( 'order_status' === $key ) {
+			$new_columns['order_status']     = __( 'Payment status', 'woo_wms_connector' );
+			$new_columns['wms_order_status'] = __( 'WMS status', 'woo_wms_connector' );
+		}
+	}
+	
+	return $new_columns;
+}
+
+add_action( 'manage_shop_order_posts_custom_column', 'populate_wms_order_status_column_with_initial_value', 10, 1 );
+add_action( 'woocommerce_shop_order_list_table_custom_column', 'populate_wms_order_status_column_with_initial_value', 10, 1 );
+/**
+ *
+ * Populate wms order status column
+ *
+ * @param string $column
+ *
+ * @return void
+ */
+function populate_wms_order_status_column_with_initial_value( string $column ): void {
+	if ( 'wms_order_status' === $column ) {
+		echo '<img src="' . esc_url( admin_url( 'images/loading.gif' ) ) . '" alt="loading">';
+	}
+}
+
+/**
+ *
+ * Add script to the footer to handle fetch request for getting order statuses and update each wms order status in the orders table
+ *
+ * @return void
+ */
+add_action( 'admin_footer', 'update_wms_order_statuses' );
+function update_wms_order_statuses(): void {
+	if ( ! isset( $_GET['page'] ) && 'wc-orders' !== $_GET['page'] ) {
+		return;
+	}
+	
+	?>
+  <script>
+    document.addEventListener( 'DOMContentLoaded', function () {
+      const orderStatuses = Array.from( document.querySelectorAll( '.column-wms_order_status' ) ).slice( 1, -1 );
+      const orderIds = Array.from( orderStatuses ).map( function ( orderStatus ) {
+        return orderStatus.closest( 'tr' ).id.replace( 'order-', '' );
+      } );
+
+      const url = 'admin-ajax.php?action=woo_wms_get_orders_statuses&orders_ids=' + orderIds.join( ',' );
+
+      fetch( url )
+      .then( response => response.json() )
+      .then( res => {
+        if ( res.success ) {
+          const ordersStatuses = res.data.orders_statuses;
+
+          Object.entries( ordersStatuses ).forEach( function ( [ orderId, status ] ) {
+            const orderStatusElement = document
+            .querySelector( '#order-' + orderId )
+            .querySelector( '.column-wms_order_status' );
+            orderStatusElement.textContent = status;
+          } );
+        }
+      } )
+      .catch( function ( error ) {
+        console.error( error );
+        alert( '<?= __( 'There was an error updating order statuses.', 'woo_wms_connector' ); ?>' );
+      } );
+    } );
+  </script>
+	<?php
+}

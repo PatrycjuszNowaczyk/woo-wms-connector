@@ -416,4 +416,46 @@ class Logicas {
 			$this->logger->error( $e->getMessage() );
 		}
 	}
+	
+	/**
+	 *
+	 * Get orders statuses from Logicas warehouse
+	 *
+	 * @param array $orders_ids
+	 *
+	 * @return void
+	 */
+	public function get_orders_statuses( array $orders_ids ): void {
+		$orders_statuses = [];
+		
+		try {
+			foreach ( $orders_ids as $order_id ) {
+				$order                  = wc_get_order( $order_id );
+				$wms_order_id           = $order->get_meta( self::$META_WMS_LOGICAS_ORDER_ID );
+				$wms_order_is_cancelled = $order->get_meta( self::$META_WMS_LOGICAS_IS_ORDER_CANCELLED );
+				
+				if ( $wms_order_is_cancelled ) {
+					$orders_statuses[ $order_id ] = 'cancelled';
+					continue;
+				}
+				
+				if ( empty( $wms_order_id ) ) {
+					$orders_statuses[ $order_id ] = 'N/A';
+					continue;
+				}
+				
+				$wms_order                    = $this->request( $this->apiBaseUrl . '/store/v2/order/' . $wms_order_id . '/details' );
+				$orders_statuses[ $order_id ] = $wms_order->status;
+			}
+			
+			wp_send_json_success( [
+				'orders_statuses' => $orders_statuses
+			], 200 );
+			
+		} catch ( Exception $e ) {
+			wp_send_json_error( [
+				'message' => $e->getMessage()
+			], 500 );
+		}
+	}
 }
