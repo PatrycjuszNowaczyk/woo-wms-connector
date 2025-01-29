@@ -448,6 +448,10 @@ class Logicas {
 				$orders_statuses[ $order_id ] = $wms_order->status;
 			}
 			
+			$orders_statuses = array_map(function ($status) {
+				return ucfirst(str_replace('-', ' ', $status));
+			}, $orders_statuses);
+			
 			wp_send_json_success( [
 				'orders_statuses' => $orders_statuses
 			], 200 );
