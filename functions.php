@@ -644,23 +644,39 @@ function update_wms_order_statuses(): void {
 
       const url = 'admin-ajax.php?action=woo_wms_get_orders_statuses&orders_ids=' + orderIds.join( ',' );
 
-      fetch( url )
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      document.querySelectorAll( 'a' ).forEach( link => {
+        link.addEventListener( 'click', () => controller.abort() );
+      } );
+
+      fetch( url, { signal } )
       .then( response => response.json() )
       .then( res => {
-        if ( res.success ) {
-          const ordersStatuses = res.data.orders_statuses;
-
-          Object.entries( ordersStatuses ).forEach( function ( [ orderId, status ] ) {
-            const orderStatusElement = document
-            .querySelector( '#order-' + orderId )
-            .querySelector( '.column-wms_order_status' );
-            orderStatusElement.innerHTML = status;
-          } );
+        if ( false === res.success ) {
+          throw new Error( res.data.message );
         }
+
+        const ordersStatuses = res.data.orders_statuses;
+
+        Object.entries( ordersStatuses ).forEach( function ( [ orderId, status ] ) {
+          const orderStatusElement = document
+          .querySelector( '#order-' + orderId )
+          .querySelector( '.column-wms_order_status' );
+          orderStatusElement.innerHTML = status;
+        } );
       } )
       .catch( function ( error ) {
-        console.error( error );
-        alert( '<?= __( 'There was an error updating order statuses.', 'woo_wms_connector' ); ?>' );
+
+        if (
+          !( error instanceof SyntaxError )
+          && !( error instanceof TypeError )
+          && error.name !== 'AbortError'
+        ) {
+          let message = '<?= __( 'There was an error updating order statuses.', 'woo_wms_connector' ); ?>' + '\n\n' + error.message;
+          alert( message );
+        }
       } );
     } );
   </script>
