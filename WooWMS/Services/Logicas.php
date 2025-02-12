@@ -59,16 +59,21 @@ class Logicas {
 	 *
 	 * @throws Exception
 	 */
-	private function request( string $url, string $method = 'GET', array $data = null ) {
+	private function request( string $url, string $method = 'GET', array $data = [] ) {
 		try {
+			$method = strtoupper( $method );
 			$args = [
-				'method'  => strtoupper( $method ),
+				'method'  => $method,
 				'headers' => [
 					'X-Auth-Token' => $this->get_right_token( $url )
-				]
+				],
+				'timeout' => apply_filters( 'http_request_timeout', 15, $url )
 			];
 			
-			if ( false === in_array( $args['method'], [ 'GET', 'HEAD', 'OPTIONS' ] ) ) {
+			if (
+				false === in_array( $method, [ 'GET', 'HEAD', 'OPTIONS' ] )
+				&& false === empty( $data )
+			) {
 				$args['body'] = json_encode( $data );
 			}
 			
