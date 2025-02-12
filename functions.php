@@ -712,3 +712,216 @@ function override_default_product_classes( string $classname, string $product_ty
 	
 	return $classname;
 }
+
+add_action('woo_wms_connector_render_manufacturer_field', 'render_manufacturer_field', 10, 2);
+/**
+ *
+ * Render the manufacturer field in the product edit screen for simple product, variable product and it's variations
+ *
+ * @param int $loop
+ * @param int $product_id
+ * $return void
+ */
+function render_manufacturer_field( $loop, $product_id ): void {
+  $product = wc_get_product( $product_id );
+	$product_type = $product->get_type();
+	$available_types = [ 'simple', 'variable', 'variation' ];
+	
+	if( false === in_array( $product_type, $available_types ) ) {
+		return;
+	}
+	woocommerce_wp_text_input( [
+		'id'            => - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id',
+		'name'          => - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id',
+		'label'         => __( 'WMS ID', 'woo_wms_connector' ),
+		'wrapper_class' => - 1 < $loop ? 'form-row' : '',
+		'description'   => __( 'This is an id of a product stored in WMS API.', 'woo_wms_connector' ),
+		'desc_tip'      => true,
+		'placeholder'   => __( 'Product is not created in WMS yet.', 'woo_wms_connector' ),
+		'value'         => $product->get_wms_id(),
+    'custom_attributes' => [
+	    'disabled' => 'disabled',
+	    'readonly' => 'readonly'
+    ]
+	] );
+ 
+	woocommerce_wp_text_input( [
+		'id'            => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
+		'name'          => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
+		'label'         => __( 'WMS name', 'woo_wms_connector' ),
+		'wrapper_class' => - 1 < $loop ? 'form-row' : '',
+		'description'   => __( 'Input product name which be stored in WMS. It\'s required during WMS product creation.', 'woo_wms_connector' ),
+		'desc_tip'      => true,
+		'placeholder'   => '',
+		'value'         => $product->get_wms_name()
+	] );
+	
+	woocommerce_wp_select( [
+		'id'            => - 1 < $loop ? "variation_manufacturer[$loop]" : 'manufacturer',
+		'name'          => - 1 < $loop ? "variation_manufacturer[$loop]" : 'manufacturer',
+		'label'         => __( 'WMS manufacturer', 'woo_wms_connector' ),
+		'wrapper_class' => - 1 < $loop ? 'form-row' : '',
+		'description'   => __( 'Select the manufacturer of this variation. It\'s required during WMS product creation.', 'woo_wms_connector' ),
+		'desc_tip'      => true,
+		'options'       => [
+			'' => __( "Select product's manufacturer", 'woo_wms_connector' )
+		], // Options will be populated by JavaScript
+	] );
+	?>
+  <script>
+    ( function ( $ ) {
+      const url = 'admin-ajax.php?action=woo_wms_get_all_manufacturers';
+
+      const manufacturerSelect = document.getElementById( '<?= ( - 1 < $loop ? "variation_manufacturer[$loop]" : 'manufacturer' ) ?>' );
+      const selectedOption = '<?= $product->get_manufacturer() ?>';
+      let allManufacturersData = JSON.parse( sessionStorage.getItem( 'woo_wms_all_manufacturers' ) );
+
+      function addManufacturersToSelect( manufacturers ) {
+        manufacturers.forEach( manufacturer => {
+          const option = document.createElement( 'option' );
+          option.value = manufacturer.id;
+          option.text = manufacturer.name + ' ( ID: ' + manufacturer.id + ' )';
+
+          if ( selectedOption.toString().toLowerCase() === manufacturer.id.toString().toLowerCase() ) {
+            option.selected = true;
+          }
+
+          manufacturerSelect.appendChild( option );
+        } );
+
+        $( manufacturerSelect ).select2( {
+          placeholder: "<?= __( "Select product's manufacturer", 'woo_wms_connector') ?>",
+          allowClear: true
+        } );
+        $( manufacturerSelect ).prop( 'disabled', <?= ( ! empty($product->get_wms_id() ) ) ?> );
+        // $( manufacturerSelect ).prop( 'disabled', false );
+      }
+
+      if ( allManufacturersData ) {
+        addManufacturersToSelect( allManufacturersData );
+        return;
+      }
+
+      fetch( url )
+      .then( response => response.json() )
+      .then( res => {
+        if ( false === res.success ) {
+          throw new Error( res.data.message );
+        }
+        allManufacturersData = res.data.manufacturers;
+        sessionStorage.setItem( 'woo_wms_all_manufacturers', JSON.stringify( allManufacturersData ) );
+        addManufacturersToSelect( allManufacturersData );
+      } )
+      .catch( error => {
+        alert( '<?= __( 'Error fetching manufacturers list from WMS API', 'woo_wms_connector' ) ?>:\n\n' + error.message );
+        console.error( error );
+      } );
+    } )( jQuery );
+  </script>
+  <script>
+    ( function () {
+      const product_data_wrapper = document.querySelector( '#woocommerce-product-data' );
+      const product_wms_id_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variation_wms_id' : 'wms_id' ) ?>"]' );
+
+      if ( product_wms_id_input.value ) {
+        const product_sku_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variable_sku' : '_sku' ) ?>"]' );
+        const product_gtin_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variable_global_unique_id' : '_global_unique_id' ) ?>"]' );
+        product_sku_input.disabled = 'disabled';
+        product_sku_input.readOnly = 'readonly';
+        product_gtin_input.disabled = 'disabled';
+        product_gtin_input.readOnly = 'readonly';
+      }
+    } )()
+  </script>
+  <style>
+      .select2-selection__clear {
+          font-size: 2em;
+          margin-right: 0.5rem;
+      }
+
+      .manufacturer_field .select2 {
+          min-width: 80%;
+      }
+
+      [class*="variation_manufacturer"] .select2 {
+          min-width: 100%;
+      }
+
+      @media (min-width: 1281px) {
+          .manufacturer_field .select2 {
+              min-width: 50%;
+          }
+      }
+      input[disabled] {
+          background-color: #eee;
+      }
+  </style>
+	<?php
+}
+
+/**
+ * Add custom manufacturer field to the product edit screen (simple product, variable product)
+ */
+add_action('woocommerce_product_options_global_unique_id', function() {
+  do_action('woo_wms_connector_render_manufacturer_field', null, get_the_ID());
+});
+
+/**
+ * Add custom manufacturer field to the product variations edit screen
+ */
+add_action( 'woocommerce_variation_options',function ( $loop, $variation_data, $variation ) {
+  do_action( 'woo_wms_connector_render_manufacturer_field', $loop, $variation->ID );
+}, 10, 3 );
+
+add_action( 'woocommerce_after_product_object_save', 'save_product_custom_fields', 10, 1 );
+/**
+ *
+ * Save product custom fields
+ *
+ * @param WC_Product $product
+ *
+ * @return void
+ */
+function save_product_custom_fields( WC_Product $product ): void {
+  $product_type = $product->get_type();
+  
+	if (
+    false === is_admin()
+    && false === in_array($product_type, [ 'simple', 'variable', 'variation' ], true )
+  ) {
+		return;
+	}
+  
+  if ( in_array( $product->get_type(), [ 'variable', 'simple' ], true ) ) {
+    if ( isset( $_POST['manufacturer'] ) && $product->get_manufacturer() !== sanitize_text_field( $_POST['manufacturer'] ) ) {
+      $product->set_manufacturer( $_POST['manufacturer'] );
+    }
+  
+    if ( isset( $_POST['wms_name'] ) && $product->get_wms_name() !== sanitize_text_field( $_POST['wms_name'] ) ) {
+      $product->set_wms_name( $_POST['wms_name'] );
+    }
+  }
+	
+	/**
+	 * Code to execute only for variation product type
+	 */
+  if ('variation' !== $product_type ) {
+    return;
+  }
+  
+	if ( isset( $_POST['variation_manufacturer'] ) ) {
+		for ( $i = 0; $i < count( $_POST['variation_manufacturer'] ); $i ++ ) {
+			if ( isset( $_POST['variation_manufacturer'][ $i ] ) && $product->get_manufacturer() !== sanitize_text_field( $_POST['variation_manufacturer'][ $i ] ) ) {
+				$product->set_manufacturer( $_POST['variation_manufacturer'][ $i ] );
+			}
+		}
+	}
+	
+  if ( isset( $_POST['variation_wms_name'] ) ) {
+    for ( $i = 0; $i < count( $_POST['variation_wms_name'] ); $i ++ ) {
+      if ( isset( $_POST['variation_wms_name'][ $i ] ) && $product->get_wms_name() !== sanitize_text_field( $_POST['variation_wms_name'][ $i ] ) ) {
+        $product->set_wms_name( $_POST['variation_wms_name'][ $i ] );
+      }
+    }
+  }
+}

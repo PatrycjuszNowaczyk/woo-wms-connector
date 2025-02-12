@@ -4,7 +4,10 @@ namespace WooWMS\Services;
 
 use Exception;
 use WooWMS\Admin\Settings;
+use WooWMS\Enums\AdminNoticeType;
 use WooWMS\Utils\Logger;
+use WC_Product;
+use WooWMS\Utils\Utils;
 
 class Logicas {
 	static string $META_WMS_LOGICAS_ORDER_ID = 'wms_logicas_order_id';
@@ -423,7 +426,6 @@ class Logicas {
 	}
 	
 	/**
-	 *
 	 * Get orders statuses from Logicas warehouse
 	 *
 	 * @param array $orders_ids
@@ -465,6 +467,197 @@ class Logicas {
 			wp_send_json_error( [
 				'message' => $e->getMessage()
 			], 500 );
+		}
+	}
+	
+	/**
+	 * Create product in Logicas warehouse
+	 *
+	 * @param array $product
+	 *
+	 * @return void
+	 */
+	public function create_product( array $product ): void {
+		$required_fields = [
+			'manufacturer',
+			'sku',
+			'ean',
+			'name',
+			'weight'
+		];
+		
+		$missing_fields = [];
+		
+		foreach ( $required_fields as $field ) {
+			if ( empty( $product[ $field ] ) ) {
+				$missing_fields[] = $field;
+			}
+		}
+		
+		if ( ! empty( $missing_fields ) ) {
+			$message = sprintf( __("Product couldn't been created. There are missing required fields:\n\n%s", 'woo_wms_connector'), join(', ', $missing_fields) );
+			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
+			return;
+		}
+		
+		try {
+			$response = $this->request( $this->apiBaseUrl . '/management/v2/products', 'POST', $product );
+			
+			if ( false === empty( $response['id']) ) {
+				update_post_meta( $product['id'], 'wms_id', $response['id'] );
+			}
+			
+			$message = sprintf( __('Product with SKU <code>%s</code> has been created.', 'woo_wms_connector'), $product['sku'] );
+			Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
+		} catch ( Exception $e ) {
+			if ( str_contains( $e->getMessage(), $product['ean'] ) || str_contains( $e->getMessage(), $product['sku'] ) ) {
+				$this->assign_api_data_to_product( $product, $this->get_products());
+				$message = sprintf( __( "Product with SKU <code>%s</code> already exist. All data that is stored in WMS are fetched to match product data stored in WooCommerce.", 'woo_wms_connector' ), $product['sku'] );
+				Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
+				return;
+			}
+			Utils::set_admin_notice( $e->getMessage(), AdminNoticeType::ERROR );
+		}
+	}
+	
+	/**
+	 * Update product in Logicas warehouse
+	 *
+	 * @param array $product
+	 *
+	 * @return void
+	 */
+	public function update_product( array $product ): void {
+		$message = $product['sku'] ?
+			sprintf( __( 'Product with SKU <code>%s</code> has been updated.', 'woo_wms_connector' ), $product['sku'] )
+			: __( 'Product has been updated.', 'woo_wms_connector' );
+		
+		Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
+	}
+	
+	/**
+	 * Fetch all products from api
+	 *
+	 * @return array
+	 */
+	public function get_products(): array {
+		try {
+			$products = [];
+			$page = 1;
+			$response = $this->request( $this->apiBaseUrl . '/management/v2/products?page=' . $page, 'GET' );
+			$total_pages = $response->meta->pagination->totalPages;
+			$products = $response->items;
+			
+			for( $page = 2; $page <= $total_pages; $page++ ) {
+				$response = $this->request( $this->apiBaseUrl . '/management/v2/products?page=' . $page, 'GET' );
+				$products[] = $response->items;
+			}
+		} catch ( Exception $e ) {
+			$this->logger->error( $e->getMessage() );
+			$message = "An error occurred while retrieving products:\n\n" . $e->getMessage();
+			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
+		}
+		
+		return $products;
+	}
+	
+	/**
+	 * Assign a product data stored in WMS to a WooCommerce product meta
+	 *
+	 * @param array $product_data
+	 * @param array $wms_products
+	 *
+	 * @return void
+	 */
+	private function assign_api_data_to_product( array $product_data, array $wms_products ): void {
+		try {
+			$wms_product = array_filter( $wms_products, function ( $wms_product ) use ( $product_data ) {
+				return $wms_product->sku === $product_data['sku'];
+			} )[0];
+			
+			if( empty( $wms_product ) ) {
+				throw new Exception( sprintf( __( 'Product with SKU %s not found in WMS API.', 'woo_wms_connector' ), $product_data['sku'] ), '404');
+			}
+			$product = wc_get_product( $product_data['id'] );
+			
+			$response = $this->request( $this->apiBaseUrl . '/management/v2/product/' . $wms_product->id, 'GET' );
+			
+			$product->set_wms_id( $response->id );
+			$product->set_wms_name( $response->name );
+			$product->set_manufacturer( $response->manufacturer->id );
+			update_post_meta( $product->get_id(), '_weight', $response->weight / 1000 );
+		
+		} catch ( Exception $e ) {
+			$this->logger->error( $e->getMessage() );
+			$message = $e->getMessage();
+			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
+		}
+	}
+	
+	/**
+	 * Extract products objects in case of variable product
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return WC_Product[]
+	 */
+	public function extract_products( WC_Product $product ): array {
+		$products = [];
+		
+		if( 'variable' === $product->get_type() ) {
+			$products = $product->get_children();
+			
+			$products = array_map(function ($product_id) {
+				return wc_get_product($product_id);
+			}, $products);
+		} else {
+			$products[] = $product;
+		}
+		
+		return $products;
+	}
+	
+	/**
+	 * Get all manufacturers from Logicas warehouse API
+	 *
+	 * @return void
+	 */
+	public function get_all_manufacturers(): void {
+		try {
+			if (false === is_admin()) {
+				throw new Exception('You are not allowed to access.', 403);
+			}
+			
+			$manufacturers = null;
+			$page = 1;
+			$total_pages = 1;
+			
+			$response = $this->request( $this->apiBaseUrl . "/management/v2/manufacturers?page=$page" );
+			
+			if ( ! $response ) {
+				throw new Exception( 'Manufacturers not found', 404 );
+			}
+			
+			$total_pages = $response->meta->pagination->totalPages;
+			$manufacturers = $response->items;
+			
+			if ( $total_pages > $page ) {
+				for ( $page = 2; $page <= $total_pages; $page++ ) {
+					$response = $this->request( $this->apiBaseUrl . "/management/v2/manufacturers?page=$page" );
+					$manufacturers = array_merge( $manufacturers, $response->items );
+				}
+			}
+			
+			wp_send_json_success( [
+				'manufacturers' => $manufacturers
+			], 200 );
+			
+		} catch ( Exception $e ) {
+			$this->logger->error( $e->getMessage() );
+			
+			wp_send_json_error( [
+				'message' => $e->getMessage()
+			], $e->getCode() );
 		}
 	}
 }
