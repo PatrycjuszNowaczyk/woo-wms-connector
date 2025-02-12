@@ -38,12 +38,24 @@ class Plugin {
 		$logicas = new Logicas( self::$settings );
 		
 		// Hook events.
+		/**
+		 * Hook to create order in WMS when WooCommerce order is completed.
+		 */
 		add_action( 'woocommerce_payment_complete', [ $logicas, 'create_order' ] );
 		
+		/**
+		 * Hook to update shop stocks in WMS when WooCommerce order is completed.
+		 */
 		add_action( 'woocommerce_payment_complete', [ $logicas, 'update_shop_stocks' ] );
 		
+		/**
+		 * Hook to update order in WMS when WooCommerce order is updated.
+		 */
 		add_action( 'save_post_order_shop', [ $logicas, 'update_order' ], 10, 3 );
 		
+		/**
+		 * Hook to cancel order in WMS when WooCommerce order is cancelled.
+		 */
 		add_action( 'woocommerce_order_status_changed', function ( $order_id, $old_status, $new_status, $order ) use ( $logicas ) {
 			if ( in_array( $new_status, [ 'cancelled', 'refunded', 'failed' ] ) ) {
 				$logicas->cancel_order( $order );
