@@ -681,3 +681,34 @@ function update_wms_order_statuses(): void {
   </script>
 	<?php
 }
+
+add_filter( 'woocommerce_product_class', 'override_default_product_classes', 10, 3 );
+/**
+ *
+ * Override the default WooCommerce product class with custom classes
+ *
+ * @param string $classname
+ * @param string $product_type
+ * @param string $product_id
+ *
+ * @return string
+ */
+function override_default_product_classes( string $classname, string $product_type, string $product_id ): string {
+	require_once __DIR__ . '/includes/products/classes/Woo_WMS_Product_Variation.php';
+	require_once __DIR__ . '/includes/products/classes/Woo_WMS_Product_Simple.php';
+	require_once __DIR__ . '/includes/products/classes/Woo_WMS_Product_Variable.php';
+	
+	if ( 'variation' === $product_type ) {
+		return 'Woo_WMS_Product_Variation';
+	}
+	
+	if ( 'simple' === $product_type ) {
+		return 'Woo_WMS_Product_Simple';
+	}
+	
+	if ( 'variable' === $product_type ) {
+		return 'Woo_WMS_Product_Variable';
+	}
+	
+	return $classname;
+}
