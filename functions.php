@@ -617,13 +617,13 @@ function populate_wms_order_status_column_with_initial_value( string $column ): 
 	}
 }
 
+add_action( 'admin_footer', 'update_wms_order_statuses' );
 /**
  *
  * Add script to the footer to handle fetch request for getting order statuses and update each wms order status in the orders table
  *
  * @return void
  */
-add_action( 'admin_footer', 'update_wms_order_statuses' );
 function update_wms_order_statuses(): void {
 	if (
     false === is_admin()
