@@ -478,7 +478,6 @@ function update_shop_stocks_button() {
                 fetch(url)
                     .then(response => response.json())
                     .then(res => {
-                        console.log(res);
                         if (res.success) {
                             alert(res.data.message);
                             window.location.reload();
