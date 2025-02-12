@@ -65,16 +65,16 @@ class Plugin {
 //		add_action('woocommerce_before_product_object_save', [ $logicas, 'update_product' ], 10, 1);
 		
 		// AJAX actions
-		add_action('wp_ajax_woo_wms_update_shop_stocks', [ $logicas, 'update_shop_stocks' ]);
+		add_action( 'wp_ajax_woo_wms_update_shop_stocks', [ $logicas, 'update_shop_stocks' ] );
 		
-		add_action('wp_ajax_woo_wms_create_order', function () use ( $logicas ) {
+		add_action( 'wp_ajax_woo_wms_create_order', function () use ( $logicas ) {
 			$logicas->create_order( (int) $_GET['order_id'] );
-		});
+		} );
 		
-		add_action('wp_ajax_woo_wms_get_orders_statuses', function () use ( $logicas ) {
-			$orders_ids = explode(',', $_GET['orders_ids']);
+		add_action( 'wp_ajax_woo_wms_get_orders_statuses', function () use ( $logicas ) {
+			$orders_ids = explode( ',', $_GET['orders_ids'] );
 			$logicas->get_orders_statuses( $orders_ids );
-		});
+		} );
 		
 		// Custom CRON actions
 		add_action( 'woo_wms_cron_create_order', [ $logicas, 'create_order' ] );
