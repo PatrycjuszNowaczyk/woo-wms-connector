@@ -7,37 +7,85 @@ if ( ! class_exists( 'WC_Product_Variation' ) && function_exists( 'WC' ) ) {
 }
 
 class Woo_WMS_Product_Variation extends WC_Product_Variation {
-	public function __construct( $product ) {
+	
+	public function __construct( $product = 0 ) {
 		parent::__construct( $product );
-		$this->data['manufacturer'] = $this->get_meta( 'manufacturer', true ) ?: '';
-		$this->data['wms_name'] = $this->get_meta( 'wms_name', true ) ?: '';
-		$this->data['wms_id'] = $this->get_meta( 'wms_id', true ) ?: '';
+		$this->data = array_merge( $this->data, [
+			'manufacturer' => get_post_meta( $this->get_id(), 'manufacturer', true ),
+			'wms_name'     => get_post_meta( $this->get_id(), 'wms_name', true ),
+			'wms_id'       => get_post_meta( $this->get_id(), 'wms_id', true )
+		] );
 	}
 	
-	public function get_manufacturer(): string {
-		return $this->data['manufacturer'];
+	public function get_manufacturer( $context = 'view' ): string {
+		return $this->get_prop( 'manufacturer', $context );
 	}
 	
 	public function set_manufacturer( $value ): void {
-		$this->data['manufacturer'] = $value;
 		update_post_meta( $this->get_id(), 'manufacturer', $value );
+		$this->set_prop( 'manufacturer', $value );
 	}
 	
-	public function get_wms_name(): string {
-		return $this->data['wms_name'];
+	public function get_wms_name( $context = 'view' ): string {
+		return $this->get_prop( 'wms_name', $context );
 	}
 	
 	public function set_wms_name( $value ): void {
-		$this->data['wms_name'] = $value;
 		update_post_meta( $this->get_id(), 'wms_name', $value );
+		$this->set_prop( 'wms_name', $value );
 	}
 	
-	public function get_wms_id(): string {
-		return $this->data['wms_id'];
+	public function get_wms_id( $context = 'view' ): string {
+		return $this->get_prop( 'wms_id', $context );
 	}
 	
 	public function set_wms_id( $value ): void {
-		$this->data['wms_id'] = $value;
 		update_post_meta( $this->get_id(), 'wms_id', $value );
+		$this->set_prop( 'wms_id', $value );
+	}
+	
+	public function save() {
+		add_action( 'woocommerce_before_product_object_save', function ( $product ) {
+			if ( 'variation' !== $product->get_type() ) {
+				return;
+			}
+			
+			$parent         = wc_get_product( $product->get_parent_id() );
+			$variations_ids = $parent->get_children();
+			
+			$variations_indexes = array_map( function ( $variation_id ) {
+				return wc_get_product( $variation_id );
+			}, $variations_ids );
+			
+			$index = array_search( $product->get_id(), array_column( $variations_indexes, 'id' ) );
+			
+			if ( false !== $index && isset( $_POST['variation_manufacturer'][ $index ] ) ) {
+				$product->set_manufacturer( (int) sanitize_text_field( $_POST['variation_manufacturer'][ $index ] ) );
+			}
+			
+			if ( false !== $index && isset( $_POST['variation_wms_name'][ $index ] ) ) {
+				$product->set_wms_name( sanitize_text_field( $_POST['variation_wms_name'][ $index ] ) );
+			}
+			
+			if ( empty( $product->changes ) ) {
+				return;
+			}
+			
+			foreach ( $product->changes as $key => $value ) {
+				$available_keys = [
+					'manufacturer',
+					'wms_name',
+					'wms_id'
+				];
+				
+				if ( false === in_array( $key, $available_keys ) ) {
+					continue;
+				}
+				
+				$this->data[ $key ] = $value;
+			}
+		}, 9999, 1 );
+		
+		return parent::save();
 	}
 }

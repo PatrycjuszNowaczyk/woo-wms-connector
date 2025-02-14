@@ -64,6 +64,21 @@ class Plugin {
 			}
 		}, 10, 4 );
 		
+		/**
+		 * Hook to get data of a product before save to create/update product in WMS when WooCommerce product is created/updated.
+		 */
+		add_action( 'woocommerce_before_product_object_save', function ( WC_Product $product ) use ( $logicas ) {
+			$available_product_types = [ 'simple', 'variable', 'variation' ];
+			$product_type = $product->get_type();
+			
+			if ( ! in_array( $product_type, $available_product_types ) ) {
+				return;
+			}
+			
+			$fields_to_compare_before = Utils::generate_required_compare_array( $product, 'before' );
+			
+			set_transient('product_before_save', $fields_to_compare_before, 300);
+		}, 10, 1 );
 
 		/**
 		 * Hook to create/update product in WMS when WooCommerce product is created/updated.
@@ -73,62 +88,30 @@ class Plugin {
 				return;
 			}
 			
-			$available_product_types = [ 'simple', 'variable' ];
+			$available_product_types = [ 'simple', 'variable', 'variation' ];
 			$product_type = $product->get_type();
 			if ( ! in_array( $product_type, $available_product_types ) ) {
 				return;
 			}
-      
-			$products = $logicas->extract_products( $product );
-			static $fields_to_compare_before = [];
-			static $fields_to_compare_after = [];
-			$products_to_update = [];
+   
+			$fields_to_compare_before = get_transient( 'product_before_save' );
+			delete_transient( 'product_before_save' );
+			$fields_to_compare_after =  Utils::generate_required_compare_array( $product );
 			
-			if ( empty( $fields_to_compare_before ) ) {
-				foreach ( $products as $product ) {
-					if ( array_key_exists( $product->get_id(), $fields_to_compare_before ) ) {
-						continue;
-					}
-					
-					$fields_to_compare_before[ $product->get_id() ] = Utils::generate_required_compare_array( $product );
-				}
-			} else if ( empty( $fields_to_compare_after ) ) {
-				foreach ( $products as $product ) {
-					if ( array_key_exists( $product->get_id(), $fields_to_compare_after ) ) {
-						continue;
-					}
-					
-					$fields_to_compare_after[ $product->get_id() ] = Utils::generate_required_compare_array( $product );
-				}
-			}
-			
-			if ( null === $fields_to_compare_before || null === $fields_to_compare_after ) {
+			if ( empty( $fields_to_compare_before ) || empty( $fields_to_compare_after ) ) {
 				return;
 			}
 			
-			foreach ( $fields_to_compare_after as $product_id => $fields ) {
-				if (
-					empty( $fields_to_compare_before[ $product_id ]['wms_id'] )
-					&& empty( $fields_to_compare_before[ $product_id ]['sku'] )
-					&& ! empty( $fields['sku'] )
-				) {
-					$fields['create'] = true;
-					$products_to_update[$product_id] = $fields;
-				} elseif ( serialize( $fields_to_compare_before[ $product_id ] ) !== serialize( $fields ) ) {
-					$products_to_update[$product_id] = $fields;
-				}
-			}
-			
-			if ( empty( $products_to_update ) ) {
+			if ( serialize( $fields_to_compare_before ) === serialize( $fields_to_compare_after ) ) {
 				return;
 			}
 			
-			foreach ( $products_to_update as $fields ) {
-				if ( ! empty( $fields['create'] ) ) {
-					$logicas->create_product( $fields );
-					continue;
-				}
-				$logicas->update_product( $fields );
+			if (
+				empty( $fields_to_compare_before[ 'wms_id' ] )
+			) {
+				$logicas->create_product( $fields_to_compare_after );
+			} elseif ( 0 !== $fields_to_compare_after['wms_id'] ) {
+				$logicas->update_product( $fields_to_compare_after );
 			}
 		}, 10, 1 );
 		

@@ -495,16 +495,16 @@ class Logicas {
 		}
 		
 		if ( ! empty( $missing_fields ) ) {
-			$message = sprintf( __("Product couldn't been created. There are missing required fields:\n\n%s", 'woo_wms_connector'), join(', ', $missing_fields) );
-			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
+			$message = sprintf( __("Product couldn't be created. Required fields are missing: %s", 'woo_wms_connector'), join(', ', $missing_fields) );
+			Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
 			return;
 		}
 		
 		try {
 			$response = $this->request( $this->apiBaseUrl . '/management/v2/products', 'POST', $product );
 			
-			if ( false === empty( $response['id']) ) {
-				update_post_meta( $product['id'], 'wms_id', $response['id'] );
+			if ( false === empty( $response->id) ) {
+				update_post_meta( $product['id'], 'wms_id', $response->id );
 			}
 			
 			$message = sprintf( __('Product with SKU <code>%s</code> has been created.', 'woo_wms_connector'), $product['sku'] );
@@ -512,7 +512,7 @@ class Logicas {
 		} catch ( Exception $e ) {
 			if ( str_contains( $e->getMessage(), $product['ean'] ) || str_contains( $e->getMessage(), $product['sku'] ) ) {
 				$this->assign_api_data_to_product( $product, $this->get_products());
-				$message = sprintf( __( "Product with SKU <code>%s</code> already exist. All data that is stored in WMS are fetched to match product data stored in WooCommerce.", 'woo_wms_connector' ), $product['sku'] );
+				$message = sprintf( __( "Product with SKU <code>%s</code> already exist. All data that is stored in WMS are fetched to match product data stored in WooCommerce with WMS.", 'woo_wms_connector' ), $product['sku'] );
 				Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
 				return;
 			}
@@ -528,11 +528,23 @@ class Logicas {
 	 * @return void
 	 */
 	public function update_product( array $product ): void {
-		$message = $product['sku'] ?
-			sprintf( __( 'Product with SKU <code>%s</code> has been updated.', 'woo_wms_connector' ), $product['sku'] )
-			: __( 'Product has been updated.', 'woo_wms_connector' );
+		try {
+			$fields_to_update = [
+				'name'   => $product['name'],
+				'weight' => (int) $product['weight']
+			];
+			
+			$response = $this->request( $this->apiBaseUrl . '/management/v2/product/' . $product['wms_id'], 'PATCH', $fields_to_update );
+			
+			$message = $product['sku'] ?
+				sprintf( __( 'Product with SKU <code>%s</code> has been updated.', 'woo_wms_connector' ), $product['sku'] )
+				: __( 'Product has been updated.', 'woo_wms_connector' );
+			Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
 		
-		Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
+		} catch ( Exception $e ) {
+			$this->logger->error( $e->getMessage() );
+			Utils::set_admin_notice( $e->getMessage(), AdminNoticeType::ERROR );
+		}
 	}
 	
 	/**
@@ -592,29 +604,6 @@ class Logicas {
 			$message = $e->getMessage();
 			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
 		}
-	}
-	
-	/**
-	 * Extract products objects in case of variable product
-	 *
-	 * @param WC_Product $product
-	 *
-	 * @return WC_Product[]
-	 */
-	public function extract_products( WC_Product $product ): array {
-		$products = [];
-		
-		if( 'variable' === $product->get_type() ) {
-			$products = $product->get_children();
-			
-			$products = array_map(function ($product_id) {
-				return wc_get_product($product_id);
-			}, $products);
-		} else {
-			$products[] = $product;
-		}
-		
-		return $products;
 	}
 	
 	/**

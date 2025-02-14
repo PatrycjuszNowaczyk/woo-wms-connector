@@ -821,14 +821,12 @@ function render_manufacturer_field( $loop, $product_id ): void {
   <script>
     ( function () {
       const product_data_wrapper = document.querySelector( '#woocommerce-product-data' );
-      const product_wms_id_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variation_wms_id' : 'wms_id' ) ?>"]' );
+      const product_wms_id_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variation_wms_id[' . $loop . ']' : 'wms_id' ) ?>"]' );
 
       if ( product_wms_id_input.value ) {
-        const product_sku_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variable_sku' : '_sku' ) ?>"]' );
-        const product_gtin_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variable_global_unique_id' : '_global_unique_id' ) ?>"]' );
-        product_sku_input.disabled = 'disabled';
+        const product_sku_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variable_sku' . $loop : '_sku' ) ?>"]' );
+        const product_gtin_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variable_global_unique_id' . $loop : '_global_unique_id' ) ?>"]' );
         product_sku_input.readOnly = 'readonly';
-        product_gtin_input.disabled = 'disabled';
         product_gtin_input.readOnly = 'readonly';
       }
     } )()
@@ -852,7 +850,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
               min-width: 50%;
           }
       }
-      input[disabled] {
+      input[readonly] {
           background-color: #eee;
       }
   </style>
@@ -872,56 +870,3 @@ add_action('woocommerce_product_options_global_unique_id', function() {
 add_action( 'woocommerce_variation_options',function ( $loop, $variation_data, $variation ) {
   do_action( 'woo_wms_connector_render_manufacturer_field', $loop, $variation->ID );
 }, 10, 3 );
-
-add_action( 'woocommerce_after_product_object_save', 'save_product_custom_fields', 10, 1 );
-/**
- *
- * Save product custom fields
- *
- * @param WC_Product $product
- *
- * @return void
- */
-function save_product_custom_fields( WC_Product $product ): void {
-  $product_type = $product->get_type();
-  
-	if (
-    false === is_admin()
-    && false === in_array($product_type, [ 'simple', 'variable', 'variation' ], true )
-  ) {
-		return;
-	}
-  
-  if ( in_array( $product->get_type(), [ 'variable', 'simple' ], true ) ) {
-    if ( isset( $_POST['manufacturer'] ) && $product->get_manufacturer() !== sanitize_text_field( $_POST['manufacturer'] ) ) {
-      $product->set_manufacturer( $_POST['manufacturer'] );
-    }
-  
-    if ( isset( $_POST['wms_name'] ) && $product->get_wms_name() !== sanitize_text_field( $_POST['wms_name'] ) ) {
-      $product->set_wms_name( $_POST['wms_name'] );
-    }
-  }
-	
-	/**
-	 * Code to execute only for variation product type
-	 */
-  if ('variation' !== $product_type ) {
-    return;
-  }
-  
-	if ( isset( $_POST['variation_manufacturer'] ) ) {
-		for ( $i = 0; $i < count( $_POST['variation_manufacturer'] ); $i ++ ) {
-			if ( isset( $_POST['variation_manufacturer'][ $i ] ) && $product->get_manufacturer() !== sanitize_text_field( $_POST['variation_manufacturer'][ $i ] ) ) {
-				$product->set_manufacturer( $_POST['variation_manufacturer'][ $i ] );
-			}
-		}
-	}
-	
-  if ( isset( $_POST['variation_wms_name'] ) ) {
-    for ( $i = 0; $i < count( $_POST['variation_wms_name'] ); $i ++ ) {
-      if ( isset( $_POST['variation_wms_name'][ $i ] ) && $product->get_wms_name() !== sanitize_text_field( $_POST['variation_wms_name'][ $i ] ) ) {
-        $product->set_wms_name( $_POST['variation_wms_name'][ $i ] );
-      }
-    }
-  }
-}

@@ -10,18 +10,23 @@ class Utils {
 	 * Generate an array of product data to compare
 	 *
 	 * @param WC_Product $product
+	 * @param string $state
 	 *
 	 * @return array
 	 */
-	public static function generate_required_compare_array( WC_Product $product ): array {
+	public static function generate_required_compare_array( WC_Product $product, string $state = 'after' ): array {
+		$data = $product->get_data();
+		$changes = $product->get_changes();
+		
 		return [
-			'wms_id'       => $product->get_wms_id(),
-			'id'           => $product->get_id(),
-			'manufacturer' => $product->get_manufacturer(),
-			'sku'          => $product->get_sku(),
-			'ean'          => $product->get_global_unique_id(),
-			'name'         => $product->get_wms_name(),
-			'weight'       => floatval( $product->get_weight() ) * 1000,
+			'id'           => 'before' !== $state && isset( $changes['id'] ) ? (int) $changes['id'] : (int) $data['id'],
+			'wms_id'       => 'before' !== $state && isset( $changes['wms_id'] ) ? (int) $changes['wms_id'] : (int) $data['wms_id'],
+			'manufacturer' => 'before' !== $state && isset( $changes['manufacturer'] ) ? (int) $changes['manufacturer'] : (int) $data['manufacturer'],
+			'sku'          => 'before' !== $state && isset( $changes['sku'] ) ? $changes['sku'] : $data['sku'],
+			'ean'          => 'before' !== $state && isset( $changes['global_unique_id'] ) ? $changes['global_unique_id'] : $data['global_unique_id'],
+			'name'         => 'before' !== $state && isset( $changes['wms_name'] ) ? $changes['wms_name'] : $data['wms_name'],
+			'weight'       => 'before' !== $state && isset( $changes['weight'] ) ? (int) ( floatval( $changes['weight'] ) * 1000 ) : (int) ( floatval( $data['weight'] ) * 1000 ),
+			// TODO setting image to upload to WMS
 //			'image'        => false === empty( $product->get_image_id() ) ? [
 //				'format'  => explode( '/', get_post_mime_type( $product->get_image_id() ) )[1],
 //				'md5'     => md5_file( get_attached_file( $product->get_image_id() ) ),
