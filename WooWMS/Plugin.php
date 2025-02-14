@@ -102,7 +102,10 @@ class Plugin {
 				return;
 			}
 			
-			if ( serialize( $fields_to_compare_before ) === serialize( $fields_to_compare_after ) ) {
+			if (
+				( 0 === $fields_to_compare_before['id'] && 0 < $fields_to_compare_after['id'] )
+				|| serialize( $fields_to_compare_before ) === serialize( $fields_to_compare_after )
+			) {
 				return;
 			}
 			
