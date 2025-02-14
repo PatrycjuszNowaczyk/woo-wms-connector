@@ -45,6 +45,10 @@ class Woo_WMS_Product_Variable extends WC_Product_Variable {
 	}
 	
 	public function save() {
+		/**
+		 * Update product's data object and database.
+		 * This hook is set to be executed as last one to allow to get data state before product object save.
+		 */
 		add_action( 'woocommerce_before_product_object_save', function ( $product ) {
 			if ( 'variable' !== $product->get_type() ) {
 				return;
