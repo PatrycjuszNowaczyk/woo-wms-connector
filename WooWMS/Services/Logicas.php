@@ -488,19 +488,19 @@ class Logicas {
 		
 		$missing_fields = [];
 		
-		foreach ( $required_fields as $field ) {
-			if ( empty( $product[ $field ] ) ) {
-				$missing_fields[] = $field;
-			}
-		}
-		
-		if ( ! empty( $missing_fields ) ) {
-			$message = sprintf( __("Product couldn't be created. Required fields are missing: %s", 'woo_wms_connector'), join(', ', $missing_fields) );
-			Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
-			return;
-		}
-		
 		try {
+			foreach ( $required_fields as $field ) {
+				if ( empty( $product[ $field ] ) ) {
+					$missing_fields[] = $field;
+				}
+			}
+			
+			if ( ! empty( $missing_fields ) ) {
+				$message = sprintf( __("Product couldn't be created. Required fields are missing: %s", 'woo_wms_connector'), join(', ', $missing_fields) );
+				Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
+				return;
+			}
+		
 			$response = $this->request( $this->apiBaseUrl . '/management/v2/products', 'POST', $product );
 			
 			if ( false === empty( $response->id) ) {
