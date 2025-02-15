@@ -104,7 +104,8 @@ class Plugin {
 			
 			if (
 				( 0 === $fields_to_compare_before['id'] && 0 < $fields_to_compare_after['id'] )
-				|| serialize( $fields_to_compare_before ) === serialize( $fields_to_compare_after )
+				|| ( ( 0 !== $fields_to_compare_before['wms_id'] && 0 !== $fields_to_compare_after['wms_id'] )
+				&& serialize( $fields_to_compare_before ) === serialize( $fields_to_compare_after ) )
 			) {
 				return;
 			}
