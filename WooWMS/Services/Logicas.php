@@ -585,7 +585,7 @@ class Logicas {
 		try {
 			$wms_product = array_filter( $wms_products, function ( $wms_product ) use ( $product_data ) {
 				return $wms_product->sku === $product_data['sku'];
-			} )[0];
+			} )[0] ?? [];
 			
 			if( empty( $wms_product ) ) {
 				throw new Exception( sprintf( __( 'Product with SKU %s not found in WMS API.', 'woo_wms_connector' ), $product_data['sku'] ), '404');
