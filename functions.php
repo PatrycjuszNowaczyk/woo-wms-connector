@@ -718,9 +718,10 @@ add_action('woo_wms_connector_render_manufacturer_field', 'render_manufacturer_f
  *
  * Render the manufacturer field in the product edit screen for simple product, variable product and it's variations
  *
- * @param int $loop
+ * @param int $loop If the loop is greater than -1, it is a variation product
  * @param int $product_id
- * $return void
+ *
+ * @return void
  */
 function render_manufacturer_field( $loop, $product_id ): void {
   $product = wc_get_product( $product_id );
