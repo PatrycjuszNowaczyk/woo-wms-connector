@@ -730,6 +730,8 @@ function render_manufacturer_field( $loop, $product_id ): void {
 	if( false === in_array( $product_type, $available_types ) ) {
 		return;
 	}
+  
+  ob_start();
 	woocommerce_wp_text_input( [
 		'id'            => - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id',
 		'name'          => - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id',
@@ -744,6 +746,104 @@ function render_manufacturer_field( $loop, $product_id ): void {
 	    'readonly' => 'readonly'
     ]
 	] );
+	$html = ob_get_clean();
+	
+	$dom = new DOMDocument();
+	libxml_use_internal_errors( true );
+	$dom->loadHTML( $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+	libxml_clear_errors();
+	
+	$wms_id_input       = $dom->getElementById( ( - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id' ) );
+	$wms_id_input_clone = $wms_id_input->cloneNode( true );
+	
+  $wms_id_input_wrapper_class = ( - 1 < $loop ? "variation_wms_id_wrapper[$loop]" : 'wms_id__wrapper' );
+	$wms_id_input_wrapper_style = <<<EOF
+    position:relative;
+    display: block;
+  EOF;
+	$wms_id_input_wrapper_style .= ($loop > -1 ? '' : 'float: left;') . "\n";
+  
+  $wms_id_input_wrapper = $dom->createElement( 'span' );
+	$wms_id_input_wrapper->setAttribute( 'class', $wms_id_input_wrapper_class );
+  $wms_id_input_wrapper->setAttribute( 'style', $wms_id_input_wrapper_style );
+	$wms_id_input_wrapper->appendChild( $wms_id_input_clone );
+
+  if ( ! empty( $product->get_wms_id()) ) {
+    $wms_id_delete_button_style = '
+      position: absolute;
+      top: 50%;
+      right: 0.5em;
+      translate: 0 -50%;
+      padding: 0.25rem;
+      min-height: unset;
+      line-height: 1em;
+    ';
+    
+    $wms_id_delete_button = $dom->createElement( 'button' );
+    $wms_id_delete_button->setAttribute( 'id', ( - 1 < $loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' ) );
+    $wms_id_delete_button->setAttribute( 'class', 'button button-link-delete' );
+    $wms_id_delete_button->setAttribute( 'style', $wms_id_delete_button_style );
+    $wms_id_delete_button->setAttribute( 'type', 'button' );
+    $wms_id_delete_button->setAttribute( 'rel', $product->get_wms_id() );
+    $wms_id_delete_button->nodeValue = __( 'delete', 'woo_wms_connector' );
+    
+    $wms_id_input_wrapper->appendChild( $wms_id_delete_button );
+  }
+  
+	$parent = $wms_id_input->parentNode;
+	$parent->appendChild( $wms_id_input_wrapper );
+	$parent->removeChild( $wms_id_input );
+	
+	echo $dom->saveHTML();
+  
+  /**
+   * This "if" block is for adding a delete button to allow user delete a product from WMS
+   */
+  if ( ! empty( $product->get_wms_id()) ) : ?>
+    <script>
+      ( function () {
+        const deleteButton = document.querySelector( '#<?= ( - 1 < $loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' ) ?>' );
+        const wmsIdInputWrapper = document.querySelector( '.<?= $wms_id_input_wrapper_class ?>' );
+        console.log(wmsIdInputWrapper);
+        wmsIdInputWrapper.appendChild( deleteButton );
+      } )()
+    </script>
+    <?php if ( false === ( - 1 < $loop ) ) : ?>
+    <style>
+      .<?= $wms_id_input_wrapper_class ?> input {
+        width: 100%;
+      }
+      
+      .<?= $wms_id_input_wrapper_class ?> .woo-wms__delete-product-button {
+        position: absolute;
+        top: 50%;
+        right: 0.5em;
+        translate: 0 -50%;
+        padding: 0.25rem;
+        min-height: unset;
+        line-height: 1em;
+      }
+      
+      .<?= $wms_id_input_wrapper_class ?> {
+        position: relative;
+        display: block;
+        width: 80%;
+        <?= ( - 1 < $loop ? '' : 'float: left;' ) ?>
+      }
+  
+      .<?= $wms_id_input_wrapper_class ?> > <?= ( - 1 < $loop ? "#variation_wms_id[$loop]" : '#wms_id' ) ?> {
+        width: 100% !important;
+      }
+  
+      @media (min-width: 1281px) {
+        .<?= $wms_id_input_wrapper_class ?> {
+          width: 50%;
+        }
+      }
+      </style>
+    <?php endif; ?>
+  <?php endif;
+//	if( $product->get_wms_id() ) echo '</div>';
  
 	woocommerce_wp_text_input( [
 		'id'            => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
