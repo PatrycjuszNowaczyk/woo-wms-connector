@@ -821,8 +821,6 @@ function render_manufacturer_field( $loop, $product_id ): void {
             fetch( url )
             .then( res => res.json() )
             .then( response => {
-              console.log( response );
-
               if ( true !== response.success ) {
                 throw new Error( response.data )
               }
