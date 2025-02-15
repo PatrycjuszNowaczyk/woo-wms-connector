@@ -98,6 +98,11 @@ class Plugin {
 			delete_transient( 'product_before_save' );
 			$fields_to_compare_after =  Utils::generate_required_compare_array( $product );
 			
+			$is_product_a_bundle = 1 < count( explode( '|', $fields_to_compare_after['sku'] ) );
+			if ( $is_product_a_bundle ) {
+				return;
+			}
+			
 			if ( empty( $fields_to_compare_before ) || empty( $fields_to_compare_after ) ) {
 				return;
 			}
