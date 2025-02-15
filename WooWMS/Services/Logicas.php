@@ -548,6 +548,32 @@ class Logicas {
 	}
 	
 	/**
+	 * Delete product from WMS
+	 *
+	 * @param int $product_wms_id
+	 */
+	public function delete_product( int $product_id, int $product_wms_id ): void {
+		try {
+			if ( empty( $product_id ) ) {
+				throw new Exception( 'WooCommerce\'s product ID is required', 400 );
+			}
+			
+			if ( empty( $product_wms_id ) ) {
+				throw new Exception( 'WMS\'s product ID is required', 400 );
+			}
+			
+			$response = $this->request( $this->apiBaseUrl . '/management/v2/product/' . $product_wms_id, 'DELETE' );
+			
+			delete_post_meta( $product_id, 'wms_id' );
+			
+			wp_send_json_success( sprintf( __( 'Product with id: %s has been correctly deleted.' ), $product_wms_id ) );
+		} catch ( Exception $e ) {
+			$this->logger->error( $e->getMessage() );
+			wp_send_json_error( $e->getMessage() );
+		}
+	}
+	
+	/**
 	 * Fetch all products from api
 	 *
 	 * @return array

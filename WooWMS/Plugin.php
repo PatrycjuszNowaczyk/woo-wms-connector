@@ -143,6 +143,12 @@ class Plugin {
 			$logicas->get_orders_statuses( $orders_ids );
 		} );
 		
+		add_action( 'wp_ajax_woo_wms_delete_product', function() use ( $logicas ) {
+			$product_id = $_GET['productId'];
+			$product_wms_id = $_GET['productWmsId'];
+			$logicas->delete_product( $product_id, $product_wms_id );
+		} );
+		
 		add_action( 'wp_ajax_woo_wms_get_all_manufacturers', [ $logicas, 'get_all_manufacturers' ] );
 		
 		// Custom CRON actions
