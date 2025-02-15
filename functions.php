@@ -731,6 +731,8 @@ function render_manufacturer_field( $loop, $product_id ): void {
 	if( false === in_array( $product_type, $available_types ) ) {
 		return;
 	}
+  // declare variables used in render_manufacturer_field function
+  $product_wms_id = $product->get_wms_id();
   
   ob_start();
 	woocommerce_wp_text_input( [
@@ -762,7 +764,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
     position:relative;
     display: block;
   EOF;
-	$wms_id_input_wrapper_style .= ($loop > -1 ? '' : 'float: left;') . "\n";
+	$wms_id_input_wrapper_style .= ( $loop > -1 ? '' : 'float: left;' ) . "\n";
   
   $wms_id_input_wrapper = $dom->createElement( 'span' );
 	$wms_id_input_wrapper->setAttribute( 'class', $wms_id_input_wrapper_class );
@@ -780,8 +782,9 @@ function render_manufacturer_field( $loop, $product_id ): void {
       line-height: 1em;
     ';
     
+    $wms_id_delete_button_id = ( - 1 < $loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' );
     $wms_id_delete_button = $dom->createElement( 'button' );
-    $wms_id_delete_button->setAttribute( 'id', ( - 1 < $loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' ) );
+    $wms_id_delete_button->setAttribute( 'id', $wms_id_delete_button_id );
     $wms_id_delete_button->setAttribute( 'class', 'button button-link-delete' );
     $wms_id_delete_button->setAttribute( 'style', $wms_id_delete_button_style );
     $wms_id_delete_button->setAttribute( 'type', 'button' );
@@ -800,52 +803,75 @@ function render_manufacturer_field( $loop, $product_id ): void {
   /**
    * This "if" block is for adding a delete button to allow user delete a product from WMS
    */
-  if ( ! empty( $product->get_wms_id()) ) : ?>
+	if ( !empty( $product_wms_id ) ) : ?>
+		<?php
+		$has_child = $product->has_child() ? 'true' : 'false';
+		?>
     <script>
       ( function () {
-        const deleteButton = document.querySelector( '#<?= ( - 1 < $loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' ) ?>' );
-        const wmsIdInputWrapper = document.querySelector( '.<?= $wms_id_input_wrapper_class ?>' );
-        console.log(wmsIdInputWrapper);
-        wmsIdInputWrapper.appendChild( deleteButton );
+        const deleteButton = document.getElementById( '<?= $wms_id_delete_button_id ?>' );
+
+        deleteButton.addEventListener( 'click', function () {
+          const hasChild = <?= $has_child ?>;
+          const info_1 = '<?= __( "This product has variations.\\nAre you sure you want to delete this product from WMS?", 'woo_wms_connector' ) ?>';
+          const info_2 = '<?= __( 'Are you sure you want to delete this product from WMS?', 'woo_wms_connector' ) ?>';
+
+          if ( confirm( hasChild ? info_1 : info_2 ) ) {
+            const url = 'admin-ajax.php?action=woo_wms_delete_product&productId=<?= $product_id ?>&productWmsId=<?= $product_wms_id ?>';
+            fetch( url )
+            .then( res => res.json() )
+            .then( response => {
+              console.log( response );
+
+              if ( true !== response.success ) {
+                throw new Error( response.data )
+              }
+
+              alert( response.data );
+              window.location.reload( true );
+            } )
+            .catch( e => {
+              const message = "<?= __( "There was an error:\\n\\n", 'woo_wms_connector' ) ?>";
+              alert( message + e.message );
+            } )
+          }
+        } )
       } )()
     </script>
-    <?php if ( false === ( - 1 < $loop ) ) : ?>
-    <style>
-      .<?= $wms_id_input_wrapper_class ?> input {
-        width: 100%;
-      }
-      
-      .<?= $wms_id_input_wrapper_class ?> .woo-wms__delete-product-button {
-        position: absolute;
-        top: 50%;
-        right: 0.5em;
-        translate: 0 -50%;
-        padding: 0.25rem;
-        min-height: unset;
-        line-height: 1em;
-      }
-      
+	<?php endif; ?>
+  <style>
+    .<?= $wms_id_input_wrapper_class ?> input {
+      width: 100%;
+    }
+
+    .<?= $wms_id_input_wrapper_class ?> .woo-wms__delete-product-button {
+      position: absolute;
+      top: 50%;
+      right: 0.5em;
+      translate: 0 -50%;
+      padding: 0.25rem;
+      min-height: unset;
+      line-height: 1em;
+    }
+
+    .<?= $wms_id_input_wrapper_class ?> {
+      position: relative;
+      display: block;
+      width: 80%;
+      <?= ( -1 < $loop ? '' : 'float: left;' ) ?>
+    }
+
+    .<?= $wms_id_input_wrapper_class ?> > #<?= ( -1 < $loop ? "variation_wms_id[$loop]" : 'wms_id' ) ?> {
+      width: 100% !important;
+    }
+
+    @media (min-width: 1281px) {
       .<?= $wms_id_input_wrapper_class ?> {
-        position: relative;
-        display: block;
-        width: 80%;
-        <?= ( - 1 < $loop ? '' : 'float: left;' ) ?>
+        width: 50%;
       }
-  
-      .<?= $wms_id_input_wrapper_class ?> > <?= ( - 1 < $loop ? "#variation_wms_id[$loop]" : '#wms_id' ) ?> {
-        width: 100% !important;
-      }
-  
-      @media (min-width: 1281px) {
-        .<?= $wms_id_input_wrapper_class ?> {
-          width: 50%;
-        }
-      }
-      </style>
-    <?php endif; ?>
-  <?php endif;
-//	if( $product->get_wms_id() ) echo '</div>';
- 
+    }
+  </style>
+ <?php
 	woocommerce_wp_text_input( [
 		'id'            => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
 		'name'          => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
