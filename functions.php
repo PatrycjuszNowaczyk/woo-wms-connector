@@ -769,6 +769,11 @@ function render_manufacturer_field( $loop, $product_id ): void {
 	] );
 	?>
   <script>
+    <?php
+    /**
+     *  Select2.js for manufacturer search input.
+     */
+    ?>
     ( function ( $ ) {
       const url = 'admin-ajax.php?action=woo_wms_get_all_manufacturers';
 
@@ -819,6 +824,11 @@ function render_manufacturer_field( $loop, $product_id ): void {
     } )( jQuery );
   </script>
   <script>
+    <?php
+    /**
+     * Set all critical inputs for WMS to readonly to prevent overwrite data by user by accident
+     */
+    ?>
     ( function () {
       const product_data_wrapper = document.querySelector( '#woocommerce-product-data' );
       const product_wms_id_input = product_data_wrapper.querySelector( '[id^="<?= ('variation' === $product_type ? 'variation_wms_id[' . $loop . ']' : 'wms_id' ) ?>"]' );
@@ -832,6 +842,11 @@ function render_manufacturer_field( $loop, $product_id ): void {
     } )()
   </script>
   <style>
+    <?php
+    /**
+    * Styles for above actions
+    */
+     ?>
       .select2-selection__clear {
           font-size: 2em;
           margin-right: 0.5rem;
