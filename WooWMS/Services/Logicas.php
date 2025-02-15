@@ -510,7 +510,7 @@ class Logicas {
 			$message = sprintf( __('Product with SKU <code>%s</code> has been created.', 'woo_wms_connector'), $product['sku'] );
 			Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
 		} catch ( Exception $e ) {
-			if ( str_contains( $e->getMessage(), $product['ean'] ) || str_contains( $e->getMessage(), $product['sku'] ) ) {
+			if ( str_contains( $e->getMessage(), $product['sku'] ) ) {
 				$this->assign_api_data_to_product( $product, $this->get_products());
 				$message = sprintf( __( "Product with SKU <code>%s</code> already exist. All data that is stored in WMS are fetched to match product data stored in WooCommerce with WMS.", 'woo_wms_connector' ), $product['sku'] );
 				Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
