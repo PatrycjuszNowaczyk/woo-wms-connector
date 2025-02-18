@@ -556,6 +556,7 @@ class Logicas {
 	/**
 	 * Delete product from WMS
 	 *
+	 * @param int $product_id
 	 * @param int $product_wms_id
 	 */
 	public function delete_product( int $product_id, int $product_wms_id ): void {
