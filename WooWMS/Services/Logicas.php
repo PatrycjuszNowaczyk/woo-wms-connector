@@ -515,7 +515,7 @@ class Logicas {
 			Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
 		} catch ( Exception $e ) {
 			if ( str_contains( $e->getMessage(), $product['sku'] ) || str_contains( $e->getMessage(), $product['ean'] ) ) {
-				if ( $this->assign_api_data_to_product( $product, $this->get_list_of_products()) ) {
+				if ( $this->sync_wc_product_data_with_wms( $product, $this->get_list_of_products()) ) {
 					$message = sprintf( __( "Product with SKU number <code>%s</code> already exists in the WMS database. All data stored in WMS was synchronized to match product data stored in WooCommerce with WMS data.", 'woo_wms_connector' ), $product['sku'] );
 					Utils::set_admin_notice( $message, AdminNoticeType::INFO );
 				}
@@ -614,7 +614,7 @@ class Logicas {
 	 *
 	 * @return bool
 	 */
-	private function assign_api_data_to_product( array $product_data, array $wms_list_of_products ): bool {
+	private function sync_wc_product_data_with_wms( array $product_data, array $wms_list_of_products ): bool {
 		$product_data_fetched = false;
 		
 		try {
