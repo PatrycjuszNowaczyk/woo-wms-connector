@@ -496,7 +496,11 @@ class Logicas {
 			}
 			
 			if ( ! empty( $missing_fields ) ) {
-				$message = sprintf( __("Product couldn't be created. Required fields are missing: %s", 'woo_wms_connector'), join(', ', $missing_fields) );
+				$message = sprintf(
+					__("Product with SKU <code>%s</code> has missing required fields: %s.", 'woo_wms_connector'),
+					$product['sku'],
+					join(', ', $missing_fields)
+				);
 				Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
 				return;
 			}
