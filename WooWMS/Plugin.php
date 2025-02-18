@@ -98,8 +98,9 @@ class Plugin {
 			delete_transient( 'product_before_save' );
 			$fields_to_compare_after =  Utils::generate_required_compare_array( $product );
 			
+			$has_product_sku = ! empty( $product->get_sku() );
 			$is_product_a_bundle = 1 < count( explode( '|', $fields_to_compare_after['sku'] ) );
-			if ( $is_product_a_bundle ) {
+			if ( ( false === $has_product_sku ) || $is_product_a_bundle ) {
 				return;
 			}
 			
