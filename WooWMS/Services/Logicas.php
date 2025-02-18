@@ -514,10 +514,12 @@ class Logicas {
 			$message = sprintf( __('Product with SKU <code>%s</code> has been created.', 'woo_wms_connector'), $product['sku'] );
 			Utils::set_admin_notice( $message, AdminNoticeType::SUCCESS );
 		} catch ( Exception $e ) {
-			if ( str_contains( $e->getMessage(), $product['sku'] ) ) {
-				$this->assign_api_data_to_product( $product, $this->get_products());
-				$message = sprintf( __( "Product with SKU <code>%s</code> already exist. All data that is stored in WMS are fetched to match product data stored in WooCommerce with WMS.", 'woo_wms_connector' ), $product['sku'] );
-				Utils::set_admin_notice( $message, AdminNoticeType::WARNING );
+			if ( str_contains( $e->getMessage(), $product['sku'] ) || str_contains( $e->getMessage(), $product['ean'] ) ) {
+				if ( $this->assign_api_data_to_product( $product, $this->get_list_of_products()) ) {
+					$message = sprintf( __( "Product with SKU number <code>%s</code> already exists in the WMS database. All data stored in WMS was synchronized to match product data stored in WooCommerce with WMS data.", 'woo_wms_connector' ), $product['sku'] );
+					Utils::set_admin_notice( $message, AdminNoticeType::INFO );
+				}
+				
 				return;
 			}
 			Utils::set_admin_notice( $e->getMessage(), AdminNoticeType::ERROR );
@@ -582,7 +584,7 @@ class Logicas {
 	 *
 	 * @return array
 	 */
-	public function get_products(): array {
+	public function get_list_of_products(): array {
 		try {
 			$products = [];
 			$page = 1;
