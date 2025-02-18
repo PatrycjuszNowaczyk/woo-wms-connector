@@ -610,19 +610,49 @@ class Logicas {
 	 * Assign a product data stored in WMS to a WooCommerce product meta
 	 *
 	 * @param array $product_data
-	 * @param array $wms_products
+	 * @param array $wms_list_of_products
 	 *
-	 * @return void
+	 * @return bool
 	 */
-	private function assign_api_data_to_product( array $product_data, array $wms_products ): void {
+	private function assign_api_data_to_product( array $product_data, array $wms_list_of_products ): bool {
+		$product_data_fetched = false;
+		
 		try {
-			$wms_product = array_filter( $wms_products, function ( $wms_product ) use ( $product_data ) {
-				return $wms_product->sku === $product_data['sku'];
+			$wms_product = array_filter( $wms_list_of_products, function ( $wms_product ) use ( $product_data ) {
+				return (
+					$wms_product->sku === $product_data['sku']
+					&& $wms_product->ean === $product_data['ean']
+				);
 			} )[0] ?? [];
 			
-			if( empty( $wms_product ) ) {
-				throw new Exception( sprintf( __( 'Product with SKU %s not found in WMS API.', 'woo_wms_connector' ), $product_data['sku'] ), '404');
+			if ( empty( $wms_product ) ) {
+				$message = <<<EOF
+Failed to synchronize data.
+There is a product in the WMS database with the SKU or EAN number you provided.
+The product with SKU <code>%s</code> and EAN number <code>%s</code> was not found in your WMS product list.
+Verify that both fields have valid values. If so, contact your WMS provider.
+EOF;
+				throw new Exception(
+					sprintf(
+						__( $message
+							, 'woo_wms_connector' ),
+						$product_data['sku'],
+						$product_data['ean']
+					),
+					'404' );
 			}
+			
+			if ( $product_data['ean'] !== $wms_product->ean ) {
+				throw new Exception(
+					sprintf(
+						__( "Couldn't sync data. A product with SKU number <code>%s</code> has a different EAN code <code>%s</code> in WMS. You have entered <code>%s</code> EAN.", 'woo_wms_connector' ),
+						$product_data['sku'],
+						$wms_product->ean,
+						$product_data['ean']
+					),
+					'404' );
+			}
+			
 			$product = wc_get_product( $product_data['id'] );
 			
 			$response = $this->request( $this->apiBaseUrl . '/management/v2/product/' . $wms_product->id, 'GET' );
@@ -631,12 +661,15 @@ class Logicas {
 			$product->set_wms_name( $response->name );
 			$product->set_manufacturer( $response->manufacturer->id );
 			update_post_meta( $product->get_id(), '_weight', $response->weight / 1000 );
-		
+			
+			$product_data_fetched = true;
 		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 			$message = $e->getMessage();
 			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
 		}
+		
+		return $product_data_fetched;
 	}
 	
 	/**
