@@ -479,19 +479,19 @@ class Logicas {
 	 */
 	public function create_product( array $product ): void {
 		$required_fields = [
-			'manufacturer',
-			'sku',
-			'ean',
-			'name',
-			'weight'
+			'manufacturer' => '( ' . __( 'Manufacturer', 'woo_wms_connector' ) . ' )',
+			'sku'=> '( ' . __( 'SKU', 'woo_wms_connector' ) . ')',
+			'ean' => '( ' . __( 'GTIN, UPC, EAN, or ISBN', 'woo_wms_connector' ) . ' )',
+			'name'=> '( ' . __( 'WMS name', 'woo_wms_connector' ) . ' )',
+			'weight' => '( ' . __( 'Weight (kg)', 'woo_wms_connector' ) . ' )'
 		];
 		
 		$missing_fields = [];
 		
 		try {
-			foreach ( $required_fields as $field ) {
-				if ( empty( $product[ $field ] ) ) {
-					$missing_fields[] = $field;
+			foreach ( $required_fields as $key => $value ) {
+				if ( empty( $product[ $key ] ) ) {
+					$missing_fields[] = $value;
 				}
 			}
 			
