@@ -618,12 +618,15 @@ class Logicas {
 		$product_data_fetched = false;
 		
 		try {
-			$wms_product = array_filter( $wms_list_of_products, function ( $wms_product ) use ( $product_data ) {
-				return (
-					$wms_product->sku === $product_data['sku']
-					&& $wms_product->ean === $product_data['ean']
-				);
-			} )[0] ?? [];
+			$wms_product = null;
+			
+			foreach ( $wms_list_of_products as $wms_product_item ) {
+				if ( trim( (string) $wms_product_item->sku ) === trim( (string) $product_data['sku'] ) ) {
+					$wms_product = $wms_product_item;
+					break;
+				}
+			}
+
 			
 			if ( empty( $wms_product ) ) {
 				$message = <<<EOF
