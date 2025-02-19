@@ -629,26 +629,17 @@ class Logicas {
 
 			
 			if ( empty( $wms_product ) ) {
-				$message = <<<EOF
-Failed to synchronize data.
-There is a product in the WMS database with the SKU or EAN number you provided.
-The product with SKU <code>%s</code> and EAN number <code>%s</code> was not found in your WMS product list.
-Verify that both fields have valid values. If so, contact your WMS provider.
-EOF;
-				throw new Exception(
-					sprintf(
-						__( $message
-							, 'woo_wms_connector' ),
-						$product_data['sku'],
-						$product_data['ean']
-					),
-					'404' );
+				$message = "Failed to synchronize data. "
+				           . "The product with SKU <code>%s</code> was not found in your WMS product list. "
+				           . "Verify SKU field have valid value. If so, contact your WMS provider.";
+				
+				throw new Exception( sprintf( __( $message, 'woo_wms_connector' ), $product_data['sku'] ), '404' );
 			}
 			
 			if ( $product_data['ean'] !== $wms_product->ean ) {
 				throw new Exception(
 					sprintf(
-						__( "Couldn't sync data. A product with SKU number <code>%s</code> has a different EAN code <code>%s</code> in WMS. You have entered <code>%s</code> EAN.", 'woo_wms_connector' ),
+						__( "Failed to synchronize data. A product with SKU number <code>%s</code> has a different EAN code ( <code>%s</code> ) in WMS product list. A EAN you entered is <code>%s</code>.", 'woo_wms_connector' ),
 						$product_data['sku'],
 						$wms_product->ean,
 						$product_data['ean']
