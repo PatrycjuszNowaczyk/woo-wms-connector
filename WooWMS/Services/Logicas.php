@@ -408,8 +408,6 @@ class Logicas {
 			
 			$this->logger->info( 'Canceled shop order id: ' . $order_id . ' | ' . 'Canceled wms order id: ' . $wms_order_id );
 			
-			$this->update_shop_stocks();
-			
 			add_action('admin_notices', function () use ($order_id) {
 				echo '<div class="notice notice-success is-dismissible">
 					<p>' . sprintf(__('Order nr %s was successfully canceled in WMS', 'woo_wms_connector'), $order_id) . '</p>
@@ -426,6 +424,8 @@ class Logicas {
 			}, 0, 0);
 			
 			$this->logger->error( $e->getMessage() );
+		} finally {
+			$this->update_shop_stocks();
 		}
 	}
 	
