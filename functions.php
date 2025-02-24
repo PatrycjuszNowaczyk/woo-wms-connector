@@ -728,6 +728,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
   $product = wc_get_product( $product_id );
 	$product_type = $product->get_type();
 	$available_types = [ 'simple', 'variable', 'variation' ];
+	$is_loop = -1 < $loop;
 	
 	if( false === in_array( $product_type, $available_types ) ) {
 		return;
@@ -737,10 +738,10 @@ function render_manufacturer_field( $loop, $product_id ): void {
   
   ob_start();
 	woocommerce_wp_text_input( [
-		'id'            => - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id',
-		'name'          => - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id',
+		'id'            => $is_loop ? "variation_wms_id[$loop]" : 'wms_id',
+		'name'          => $is_loop ? "variation_wms_id[$loop]" : 'wms_id',
 		'label'         => __( 'WMS ID', 'woo_wms_connector' ),
-		'wrapper_class' => - 1 < $loop ? 'form-row' : '',
+		'wrapper_class' => $is_loop ? 'form-row' : '',
 		'description'   => __( 'This is an id of a product stored in WMS API.', 'woo_wms_connector' ),
 		'desc_tip'      => true,
 		'placeholder'   => __( 'Product is not created in WMS yet.', 'woo_wms_connector' ),
@@ -757,15 +758,15 @@ function render_manufacturer_field( $loop, $product_id ): void {
 	$dom->loadHTML( $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 	libxml_clear_errors();
 	
-	$wms_id_input       = $dom->getElementById( ( - 1 < $loop ? "variation_wms_id[$loop]" : 'wms_id' ) );
+	$wms_id_input       = $dom->getElementById( ( $is_loop ? "variation_wms_id[$loop]" : 'wms_id' ) );
 	$wms_id_input_clone = $wms_id_input->cloneNode( true );
 	
-  $wms_id_input_wrapper_class = ( - 1 < $loop ? "variation_wms_id_wrapper[$loop]" : 'wms_id__wrapper' );
+  $wms_id_input_wrapper_class = ( $is_loop ? "variation_wms_id_wrapper[$loop]" : 'wms_id__wrapper' );
 	$wms_id_input_wrapper_style = <<<EOF
     position:relative;
     display: block;
   EOF;
-	$wms_id_input_wrapper_style .= ( $loop > -1 ? '' : 'float: left;' ) . "\n";
+	$wms_id_input_wrapper_style .= ( $is_loop ? '' : 'float: left;' ) . "\n";
   
   $wms_id_input_wrapper = $dom->createElement( 'span' );
 	$wms_id_input_wrapper->setAttribute( 'class', $wms_id_input_wrapper_class );
@@ -783,7 +784,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
       line-height: 1em;
     ';
     
-    $wms_id_delete_button_id = ( - 1 < $loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' );
+    $wms_id_delete_button_id = ( $is_loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' );
     $wms_id_delete_button = $dom->createElement( 'button' );
     $wms_id_delete_button->setAttribute( 'id', $wms_id_delete_button_id );
     $wms_id_delete_button->setAttribute( 'class', 'button button-link-delete' );
@@ -857,10 +858,10 @@ function render_manufacturer_field( $loop, $product_id ): void {
       position: relative;
       display: block;
       width: 80%;
-      <?= ( -1 < $loop ? '' : 'float: left;' ) ?>
+      <?= ( $is_loop ? '' : 'float: left;' ) ?>
     }
 
-    .<?= $wms_id_input_wrapper_class ?> > #<?= ( -1 < $loop ? "variation_wms_id[$loop]" : 'wms_id' ) ?> {
+    .<?= $wms_id_input_wrapper_class ?> > #<?= ( $is_loop ? "variation_wms_id[$loop]" : 'wms_id' ) ?> {
       width: 100% !important;
     }
 
@@ -872,10 +873,10 @@ function render_manufacturer_field( $loop, $product_id ): void {
   </style>
  <?php
 	woocommerce_wp_text_input( [
-		'id'            => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
-		'name'          => - 1 < $loop ? "variation_wms_name[$loop]" : 'wms_name',
+		'id'            => $is_loop ? "variation_wms_name[$loop]" : 'wms_name',
+		'name'          => $is_loop ? "variation_wms_name[$loop]" : 'wms_name',
 		'label'         => __( 'WMS name', 'woo_wms_connector' ),
-		'wrapper_class' => - 1 < $loop ? 'form-row' : '',
+		'wrapper_class' => $is_loop ? 'form-row' : '',
 		'description'   => __( 'Input product name which be stored in WMS. It\'s required during WMS product creation.', 'woo_wms_connector' ),
 		'desc_tip'      => true,
 		'placeholder'   => '',
@@ -883,10 +884,10 @@ function render_manufacturer_field( $loop, $product_id ): void {
 	] );
 	
 	woocommerce_wp_select( [
-		'id'            => - 1 < $loop ? "variation_manufacturer[$loop]" : 'manufacturer',
-		'name'          => - 1 < $loop ? "variation_manufacturer[$loop]" : 'manufacturer',
+		'id'            => $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer',
+		'name'          => $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer',
 		'label'         => __( 'WMS manufacturer', 'woo_wms_connector' ),
-		'wrapper_class' => - 1 < $loop ? 'form-row' : '',
+		'wrapper_class' => $is_loop ? 'form-row' : '',
 		'description'   => __( 'Select the manufacturer of this variation. It\'s required during WMS product creation.', 'woo_wms_connector' ),
 		'desc_tip'      => true,
 		'options'       => [
@@ -903,7 +904,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
     ( function ( $ ) {
       const url = 'admin-ajax.php?action=woo_wms_get_all_manufacturers';
 
-      const manufacturerSelect = document.getElementById( '<?= ( - 1 < $loop ? "variation_manufacturer[$loop]" : 'manufacturer' ) ?>' );
+      const manufacturerSelect = document.getElementById( '<?= ( $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer' ) ?>' );
       const selectedOption = '<?= $product->get_manufacturer() ?>';
       let allManufacturersData = JSON.parse( sessionStorage.getItem( 'woo_wms_all_manufacturers' ) );
 
