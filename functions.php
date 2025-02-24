@@ -722,6 +722,7 @@ add_action('woo_wms_connector_render_manufacturer_field', 'render_manufacturer_f
  * @param int $product_id
  *
  * @return void
+ * @throws DOMException
  */
 function render_manufacturer_field( $loop, $product_id ): void {
   $product = wc_get_product( $product_id );
