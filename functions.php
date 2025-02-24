@@ -725,6 +725,8 @@ add_action('woo_wms_connector_render_manufacturer_field', 'render_manufacturer_f
  * @throws DOMException
  */
 function render_manufacturer_field( $loop, $product_id ): void {
+	global $woocommerce_wpml;
+  
   $product = wc_get_product( $product_id );
 	$product_type = $product->get_type();
 	$available_types = [ 'simple', 'variable', 'variation' ];
@@ -968,6 +970,49 @@ function render_manufacturer_field( $loop, $product_id ): void {
       }
     } )()
   </script>
+	<?php
+	/**
+	 * Lock fields if it's a translation of a product
+	 */
+  $is_original_language = $woocommerce_wpml->products->is_original_product( $product_id );
+	if ( false === $is_original_language ): ?>
+    <script>
+      ( function () {
+        <?php echo ( $is_loop ? '' : "document.addEventListener( 'DOMContentLoaded', function () {" ) ?>
+
+          const idsToLock = [
+            '<?= ( $is_loop ? "variation_wms_id[$loop]" : 'wms_id' ) ?>',
+            '<?= ( $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer' ) ?>',
+            '<?= ( $is_loop ? "variation_wms_name[$loop]" : 'wms_name' ) ?>'
+          ]
+        
+          const lockerImg = document.querySelector('.wcml_lock_img');
+          
+          idsToLock.forEach( function ( el ) {
+            const lockerImgClone = lockerImg.cloneNode(false);
+            lockerImgClone.classList.remove('wcml_lock_img');
+            lockerImgClone.style.removeProperty('display');
+            
+            const domElement = document.getElementById(el);
+            domElement.disabled = 'disabled';
+            domElement.readOnly = 'readonly';
+            if ( el.includes('wms_id') ) {
+              domElement.parentElement.parentElement.appendChild(lockerImgClone);
+              const deleteButton = domElement.parentElement.querySelector('button');
+              if ( deleteButton ) {
+                deleteButton.remove();
+              }
+            } else if ( el.includes('manufacturer') ) {
+              lockerImgClone.style.top = '6px';
+              domElement.parentElement.appendChild(lockerImgClone);
+            } else {
+              domElement.parentElement.appendChild(lockerImgClone);
+            }
+          } )
+	      <?php echo ( $is_loop ? '' : "} )" ) ?>
+      } )()
+    </script>
+	<?php endif; ?>
   <style>
     <?php
     /**
