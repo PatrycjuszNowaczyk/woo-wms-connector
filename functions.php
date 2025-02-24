@@ -817,26 +817,58 @@ function render_manufacturer_field( $loop, $product_id ): void {
 
         deleteButton.addEventListener( 'click', function () {
           const hasChild = <?= $has_child ?>;
-          const info_1 = '<?= __( "This product has variations.\\nAre you sure you want to delete this product from WMS?", 'woo_wms_connector' ) ?>';
-          const info_2 = '<?= __( 'Are you sure you want to delete this product from WMS?', 'woo_wms_connector' ) ?>';
+          <?php
+            $info_variable = <<<TEXT
+            Be careful!!\n
+            This product has variations.
+            Are you sure you want to delete this product from WMS?\n
+            It won't affect variations deletion.
+            In order to delete variations please delete them first.
+            TEXT;
+            $info_variable = preg_replace("/\r\n|\r|\n/", "\\n", $info_variable);
+            
+            
+            
+            $info_single = <<<TEXT
+            Be careful!!\n
+            Are you sure you want to delete this product from WMS?
+            There is no way to undo this action.
+            TEXT;
+            $info_single = preg_replace("/\r\n|\r|\n/", "\\n", $info_single);
+            
+            $prompt_proceed_text = __( "Do you want to proceed? Type 'yes' or 'no'", 'woo_wms_connector');
+            
+            $info_variable .= "\n\n" . $prompt_proceed_text;
+            $info_single .= "\n\n" . $prompt_proceed_text;
+            
+            $info_proceed_deletion = __( sprintf( "Are you sure you want to proceed with deletion of the product with SKU: %s from WMS?", $product->get_sku() ), 'woo_wms_connector');
+          ?>
+          const info_variable = "<?= __( preg_replace("/\r\n|\r|\n/", "\\n", $info_variable), 'woo_wms_connector' ) ?>";
+          const info_single = "<?= __( preg_replace("/\r\n|\r|\n/", "\\n", $info_single), 'woo_wms_connector' ) ?>";
 
-          if ( confirm( hasChild ? info_1 : info_2 ) ) {
-            const url = 'admin-ajax.php?action=woo_wms_delete_product&productId=<?= $product_id ?>&productWmsId=<?= $product_wms_id ?>';
-            fetch( url )
-            .then( res => res.json() )
-            .then( response => {
-              if ( true !== response.success ) {
-                throw new Error( response.data )
-              }
-
-              alert( response.data );
-              window.location.reload( true );
-            } )
-            .catch( e => {
-              const message = "<?= __( "There was an error:\\n\\n", 'woo_wms_connector' ) ?>";
-              alert( message + e.message );
-            } )
+          if ( 'yes' !== prompt( hasChild ? info_variable : info_single ).toLowerCase() ) {
+            return;
           }
+          
+          if ( true !== confirm( "<?= $info_proceed_deletion ?>" ) ) {
+            return;
+          }
+          
+          const url = 'admin-ajax.php?action=woo_wms_delete_product&productId=<?= $product_id ?>&productWmsId=<?= $product_wms_id ?>';
+          fetch( url )
+          .then( res => res.json() )
+          .then( response => {
+            if ( true !== response.success ) {
+              throw new Error( response.data )
+            }
+
+            alert( response.data );
+            window.location.reload( true );
+          } )
+          .catch( e => {
+            const message = "<?= __( "There was an error:\\n\\n", 'woo_wms_connector' ) ?>";
+            alert( message + e.message );
+          } )
         } )
       } )()
     </script>
