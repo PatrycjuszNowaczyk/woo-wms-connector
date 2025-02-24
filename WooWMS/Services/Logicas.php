@@ -573,11 +573,13 @@ class Logicas {
 				throw new Exception( 'WMS\'s product ID is required', 400 );
 			}
 			
+			$product = wc_get_product(  $product_id );
+			
 			$response = $this->request( $this->apiBaseUrl . '/management/v2/product/' . $product_wms_id, 'DELETE' );
 			
 			delete_post_meta( $product_id, 'wms_id' );
 			
-			wp_send_json_success( sprintf( __( 'Product with id: %s has been correctly deleted.' ), $product_wms_id ) );
+			wp_send_json_success( sprintf( __( 'Product with WMS ID: %s and SKU: %s was successfully deleted.', 'woo_wms_connector' ), $product_wms_id, $product->get_sku() ) );
 		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
 			wp_send_json_error( $e->getMessage() );
