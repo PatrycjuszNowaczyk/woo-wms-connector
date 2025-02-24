@@ -6,7 +6,6 @@ use Exception;
 use WooWMS\Admin\Settings;
 use WooWMS\Enums\AdminNoticeType;
 use WooWMS\Utils\Logger;
-use WC_Product;
 use WooWMS\Utils\Utils;
 
 class Logicas {
