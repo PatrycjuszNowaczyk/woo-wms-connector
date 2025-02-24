@@ -667,6 +667,10 @@ class Logicas {
 			$this->logger->error( $e->getMessage() );
 			$message = $e->getMessage();
 			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
+		} finally {
+			if ( true === $product_data_fetched ) {
+				set_transient('wms_sync_product_data_' . $product_data['id'], true, 300);
+			}
 		}
 		
 		return $product_data_fetched;

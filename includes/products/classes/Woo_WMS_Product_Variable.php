@@ -54,30 +54,33 @@ class Woo_WMS_Product_Variable extends WC_Product_Variable {
 				return;
 			}
 			
-			if ( isset( $_POST['manufacturer'] ) && $product->get_manufacturer() !== sanitize_text_field( $_POST['manufacturer'] ) ) {
-				$product->set_manufacturer( (int) sanitize_text_field( $_POST['manufacturer'] ) );
-			}
-			
-			if ( isset( $_POST['wms_name'] ) && $product->get_wms_name() !== sanitize_text_field( $_POST['wms_name'] ) ) {
-				$product->set_wms_name( sanitize_text_field( $_POST['wms_name'] ) );
-			}
-			
-			if ( empty( $product->changes ) ) {
-				return;
-			}
-			
-			foreach ( $product->changes as $key => $value ) {
-				$available_keys = [
-					'manufacturer',
-					'wms_name',
-					'wms_id'
-				];
-				
-				if ( false === in_array( $key, $available_keys ) ) {
-					continue;
+			$is_product_data_synced = get_transient( 'wms_sync_product_data_' . $product->get_id() );
+			if ( empty( $is_product_data_synced ) ) {
+				if ( isset( $_POST['manufacturer'] ) && $product->get_manufacturer() !== sanitize_text_field( $_POST['manufacturer'] ) ) {
+					$product->set_manufacturer( (int) sanitize_text_field( $_POST['manufacturer'] ) );
 				}
 				
-				$this->data[ $key ] = $value;
+				if ( isset( $_POST['wms_name'] ) && $product->get_wms_name() !== sanitize_text_field( $_POST['wms_name'] ) ) {
+					$product->set_wms_name( sanitize_text_field( $_POST['wms_name'] ) );
+				}
+				
+				if ( empty( $product->changes ) ) {
+					return;
+				}
+				
+				foreach ( $product->changes as $key => $value ) {
+					$available_keys = [
+						'manufacturer',
+						'wms_name',
+						'wms_id'
+					];
+					
+					if ( false === in_array( $key, $available_keys ) ) {
+						continue;
+					}
+					
+					$this->data[ $key ] = $value;
+				}
 			}
 		}, 9999, 1 );
 		

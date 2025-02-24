@@ -88,16 +88,32 @@ class Plugin {
 				return;
 			}
 			
+			// check if product data is already synced to WMS to prevent update the same product multiple times
+			$is_product_data_synced = get_transient( 'wms_sync_product_data_' . $product->get_id() );
+			if ( ! empty( $is_product_data_synced ) ) {
+				delete_transient( 'wms_sync_product_data_' . $product->get_id() );
+				return;
+			}
+			
+			// check product's type
 			$available_product_types = [ 'simple', 'variable', 'variation' ];
 			$product_type = $product->get_type();
 			if ( ! in_array( $product_type, $available_product_types ) ) {
 				return;
 			}
    
+			// get fields to compare if there are changes
 			$fields_to_compare_before = get_transient( 'product_before_save' );
 			delete_transient( 'product_before_save' );
 			$fields_to_compare_after =  Utils::generate_required_compare_array( $product );
 			
+			// check if there are changes
+			$are_changes_in_product = serialize( $fields_to_compare_before ) !== serialize( $fields_to_compare_after );
+			if ( false === $are_changes_in_product ) {
+				return;
+			}
+			
+			// check if product has SKU
 			$has_product_sku = ! empty( $product->get_sku() );
 			$is_product_a_bundle = 1 < count( explode( '|', $fields_to_compare_after['sku'] ) );
 			if ( ( false === $has_product_sku ) || $is_product_a_bundle ) {
@@ -108,11 +124,7 @@ class Plugin {
 				return;
 			}
 			
-			if (
-				( 0 === $fields_to_compare_before['id'] && 0 < $fields_to_compare_after['id'] )
-				|| ( ( 0 !== $fields_to_compare_before['wms_id'] && 0 !== $fields_to_compare_after['wms_id'] )
-				&& serialize( $fields_to_compare_before ) === serialize( $fields_to_compare_after ) )
-			) {
+			if ( 0 === $fields_to_compare_before['id'] && 0 < $fields_to_compare_after['id'] ) {
 				return;
 			}
 			

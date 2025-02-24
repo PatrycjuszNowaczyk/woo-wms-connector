@@ -54,39 +54,42 @@ class Woo_WMS_Product_Variation extends WC_Product_Variation {
 				return;
 			}
 			
-			$parent         = wc_get_product( $product->get_parent_id() );
-			$variations_ids = $parent->get_children();
-			
-			$variations_indexes = array_map( function ( $variation_id ) {
-				return wc_get_product( $variation_id );
-			}, $variations_ids );
-			
-			$index = array_search( $product->get_id(), array_column( $variations_indexes, 'id' ) );
-			
-			if ( false !== $index && isset( $_POST['variation_manufacturer'][ $index ] ) ) {
-				$product->set_manufacturer( (int) sanitize_text_field( $_POST['variation_manufacturer'][ $index ] ) );
-			}
-			
-			if ( false !== $index && isset( $_POST['variation_wms_name'][ $index ] ) ) {
-				$product->set_wms_name( sanitize_text_field( $_POST['variation_wms_name'][ $index ] ) );
-			}
-			
-			if ( empty( $product->changes ) ) {
-				return;
-			}
-			
-			foreach ( $product->changes as $key => $value ) {
-				$available_keys = [
-					'manufacturer',
-					'wms_name',
-					'wms_id'
-				];
+			$is_product_data_synced = get_transient( 'wms_sync_product_data_' . $product->get_id() );
+			if ( empty( $is_product_data_synced ) ) {
+				$parent         = wc_get_product( $product->get_parent_id() );
+				$variations_ids = $parent->get_children();
 				
-				if ( false === in_array( $key, $available_keys ) ) {
-					continue;
+				$variations_indexes = array_map( function ( $variation_id ) {
+					return wc_get_product( $variation_id );
+				}, $variations_ids );
+				
+				$index = array_search( $product->get_id(), array_column( $variations_indexes, 'id' ) );
+				
+				if ( false !== $index && isset( $_POST['variation_manufacturer'][ $index ] ) ) {
+					$product->set_manufacturer( (int) sanitize_text_field( $_POST['variation_manufacturer'][ $index ] ) );
 				}
 				
-				$this->data[ $key ] = $value;
+				if ( false !== $index && isset( $_POST['variation_wms_name'][ $index ] ) ) {
+					$product->set_wms_name( sanitize_text_field( $_POST['variation_wms_name'][ $index ] ) );
+				}
+				
+				if ( empty( $product->changes ) ) {
+					return;
+				}
+				
+				foreach ( $product->changes as $key => $value ) {
+					$available_keys = [
+						'manufacturer',
+						'wms_name',
+						'wms_id'
+					];
+					
+					if ( false === in_array( $key, $available_keys ) ) {
+						continue;
+					}
+					
+					$this->data[ $key ] = $value;
+				}
 			}
 		}, 9999, 1 );
 		
