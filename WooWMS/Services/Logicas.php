@@ -87,17 +87,17 @@ class Logicas {
 				throw new Exception( $response->get_error_message() );
 			} else if ( 400 <= $response_code) {
 				if ( 401 === $response_code ) {
-					$message = __('Your request has not been properly authorized.');
+					$message = __( 'Your request has not been properly authorized.', 'woo_wms_connector' );
 				} else {
 					$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
-					$message = $response_body['message'] ?? (string) $response_body ?: __( 'There is no message from WMS api.' );
+					$message       = $response_body['message'] ?? (string) $response_body ?: __( 'There is no message from WMS api.', 'woo_wms_connector' );
 				}
 				throw new Exception( $message );
 			}
 			
 			return json_decode( wp_remote_retrieve_body( $response ) );
 		} catch ( Exception $e ) {
-			$error_message = __('Error from WMS API:', 'woo_wms_connector') . ' ' . $e->getMessage();
+			$error_message = __( 'Error from WMS API:', 'woo_wms_connector' ) . ' ' . $e->getMessage();
 			throw new Exception( $error_message );
 		}
 	}
@@ -141,13 +141,13 @@ class Logicas {
 		try {
 			// get order object by id
 			$order = wc_get_order( $orderId );
-			if ( ! $order ) {
-				throw new Exception( "Order nr $orderId not found" );
+			if ( !$order ) {
+				throw new Exception( sprintf( __( "Order nr %s not found", 'woo_wms_connector' ), $orderId ) );
 			}
 			
 			$wms_logicas_order_id = $order->get_meta( self::$META_WMS_LOGICAS_ORDER_ID );
-			if ( ! empty( $wms_logicas_order_id ) ) {
-				throw new Exception( "Order nr $orderId already created in Logicas with nr: " . $wms_logicas_order_id );
+			if ( !empty( $wms_logicas_order_id ) ) {
+				throw new Exception( sprintf( __( "Order nr %s already created in Logicas with nr: %s", 'woo_wms_connector' ), $orderId, $wms_logicas_order_id ) );
 			}
 			
 			// declare variables
@@ -185,7 +185,7 @@ class Logicas {
 			}
 			
 			if ( empty( $items_to_send ) ) {
-				throw new Exception( 'No products found in order with ID: ' . $orderId );
+				throw new Exception( sprintf( __( 'No products found in order with ID: %s', 'woo_wms_connector' ), $orderId ) );
 			}
 			
 			// prepare order data
@@ -213,8 +213,8 @@ class Logicas {
 			}
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders', 'POST', $orderData );
-			if ( ! $orderResponse ) {
-				throw new Exception( 'Order not created: ' . json_encode( $orderData ) );
+			if ( !$orderResponse ) {
+				throw new Exception( __( 'Order not created: ', 'woo_wms_connector' ) . json_encode( $orderData ) );
 			}
 			
 			$order->update_meta_data( self::$META_WMS_LOGICAS_ORDER_ID, $orderResponse->id );
@@ -252,8 +252,8 @@ class Logicas {
 				], 500);
 			}
 			
-			if ( defined('WOO_WMS_DOING_CRON') && WOO_WMS_DOING_CRON ) {
-				echo 'Error: ' . $e->getMessage() . PHP_EOL;
+			if ( defined( 'WOO_WMS_DOING_CRON' ) && WOO_WMS_DOING_CRON ) {
+				echo __( 'Error: ', 'woo_wms_connector' ) . $e->getMessage() . PHP_EOL;
 			}
 		}
 	}
@@ -285,8 +285,8 @@ class Logicas {
 			];
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders/' . $order['id'], 'PUT', $orderData );
-			if ( ! $orderResponse ) {
-				throw new Exception( 'Order not updated' );
+			if ( !$orderResponse ) {
+				throw new Exception( __( 'Order not updated.', 'woo_wms_connector' ) );
 			}
 			
 			$this->logger->info( 'Order data: ' . json_encode( $orderResponse ) );
@@ -306,8 +306,8 @@ class Logicas {
 	public function update_shop_stocks(): void {
 		try {
 			$stocks = $this->request( $this->apiBaseUrl . '/management/v2/warehouse/' . $this->warehouseId . '/stocks/sellable' );
-			if ( ! $stocks ) {
-				throw new Exception( 'Stocks not found' );
+			if ( !$stocks ) {
+				throw new Exception( __( 'Stocks not found.', 'woo_wms_connector' ) );
 			}
 			$stocks = $stocks->items;
 			
@@ -399,8 +399,8 @@ class Logicas {
 			
 			$orderResponse = $this->request( $this->apiBaseUrl . '/store/v2/orders/' . $wms_order_id . '/cancel', 'POST' );
 			
-			if ( false === is_array($orderResponse) && ! $orderResponse ) {
-				throw new Exception( 'Order not canceled' );
+			if ( false === is_array( $orderResponse ) && !$orderResponse ) {
+				throw new Exception( __( 'Order not canceled', 'woo_wms_connector' ) );
 			}
 			
 			$order->update_meta_data( self::$META_WMS_LOGICAS_IS_ORDER_CANCELLED, 1 );
@@ -566,11 +566,11 @@ class Logicas {
 	public function delete_product( int $product_id, int $product_wms_id ): void {
 		try {
 			if ( empty( $product_id ) ) {
-				throw new Exception( 'WooCommerce\'s product ID is required', 400 );
+				throw new Exception( __( "WooCommerce's product ID is required", 'woo_wms_connector' ), 400 );
 			}
 			
 			if ( empty( $product_wms_id ) ) {
-				throw new Exception( 'WMS\'s product ID is required', 400 );
+				throw new Exception( __( "WMS's product ID is required", 'woo_wms_connector' ), 400 );
 			}
 			
 			$product = wc_get_product(  $product_id );
@@ -605,7 +605,7 @@ class Logicas {
 			}
 		} catch ( Exception $e ) {
 			$this->logger->error( $e->getMessage() );
-			$message = "An error occurred while retrieving products:\n\n" . $e->getMessage();
+			$message = __( "An error occurred while retrieving products:\n\n", 'woo_wms_connector' ) . $e->getMessage();
 			Utils::set_admin_notice( $message, AdminNoticeType::ERROR );
 		}
 		
@@ -635,17 +635,25 @@ class Logicas {
 
 			
 			if ( empty( $wms_product ) ) {
-				$message = "Failed to synchronize data. "
-				           . "The product with SKU <code>%s</code> was not found in your WMS product list. "
-				           . "Verify SKU field have valid value. If so, contact your WMS provider.";
+				$message = <<<TEXT
+				Failed to synchronize data.
+				The product with SKU <code>%s</code> was not found in your WMS product list.
+				Verify SKU field have valid value. If so, contact your WMS provider.
+				TEXT;
 				
 				throw new Exception( sprintf( __( $message, 'woo_wms_connector' ), $product_data['sku'] ), '404' );
 			}
 			
 			if ( $product_data['ean'] !== $wms_product->ean ) {
+				$message = <<<TEXT
+				Failed to synchronize data.
+				A product with SKU number <code>%s</code> has a different EAN code ( <code>%s</code> ) in WMS product list.
+				An EAN you entered is <code>%s</code>."
+				TEXT;
+				
 				throw new Exception(
 					sprintf(
-						__( "Failed to synchronize data. A product with SKU number <code>%s</code> has a different EAN code ( <code>%s</code> ) in WMS product list. A EAN you entered is <code>%s</code>.", 'woo_wms_connector' ),
+						__( $message, 'woo_wms_connector' ),
 						$product_data['sku'],
 						$wms_product->ean,
 						$product_data['ean']
@@ -683,8 +691,8 @@ class Logicas {
 	 */
 	public function get_all_manufacturers(): void {
 		try {
-			if (false === is_admin()) {
-				throw new Exception('You are not allowed to access.', 403);
+			if ( false === is_admin() ) {
+				throw new Exception( __( 'You are not allowed to access.', 'woo_wms_connector' ), 403 );
 			}
 			
 			$manufacturers = null;
@@ -693,8 +701,8 @@ class Logicas {
 			
 			$response = $this->request( $this->apiBaseUrl . "/management/v2/manufacturers?page=$page" );
 			
-			if ( ! $response ) {
-				throw new Exception( 'Manufacturers not found', 404 );
+			if ( !$response ) {
+				throw new Exception( __( 'Manufacturers not found', 'woo_wms_connector' ), 404 );
 			}
 			
 			$total_pages = $response->meta->pagination->totalPages;
