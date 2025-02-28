@@ -503,11 +503,11 @@ add_action('woocommerce_new_order', function($id) {
  *
  * On checkout create a custom order number and save it as meta data in the order.
  *
- * @param $order
+ * @param WC_Order $order
  *
  * @return void
  */
-function save_custom_order_number( $order ): void {
+function save_custom_order_number( WC_Order $order ): void {
 	// Get the current time
 	$current_time = current_time('timestamp');
 	$month = date('m', $current_time); // Current month
