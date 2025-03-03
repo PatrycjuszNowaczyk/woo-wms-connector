@@ -526,7 +526,7 @@ function save_custom_order_number( WC_Order $order ): void {
 	$nn = count($orders_this_month) + 10;
 	
 	// Create the custom order number
-	$custom_order_number = sprintf('%02d%02d%02d', $nn, $month, $year);
+	$custom_order_number = sprintf('1%02d%02d%02d', $nn, $month, $year);
 	
 	// Save the custom order number as meta data
 	$order->update_meta_data( Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID, $custom_order_number );
