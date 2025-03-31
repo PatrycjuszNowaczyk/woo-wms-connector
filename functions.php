@@ -627,7 +627,7 @@ function update_wms_order_statuses(): void {
 	if (
     false === is_admin()
     || ! isset( $_GET['page'] )
-    && 'wc-orders' !== $_GET['page']
+    || ( isset( $_GET['page'] ) && 'wc-orders' !== $_GET['page'] )
     || true === isset( $_GET['action'] )
   ) {
 		return;
