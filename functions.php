@@ -15,12 +15,12 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
 	$wms_order_id = $order->get_meta( Logicas::$META_WMS_LOGICAS_ORDER_ID );
 	$is_wms_order_cancelled = ! empty( $order->get_meta( Logicas::$META_WMS_LOGICAS_IS_ORDER_CANCELLED ) );
   $order_status = $order->get_status();
-  
+
 	// Check if the custom field has a value
 	if (empty($wms_order_id)) {
 		$wms_order_id = 'N/A';
 	}
- 
+
 	?>
   <div
     style="
@@ -84,10 +84,10 @@ function display_custom_field_in_admin_order(WC_Order $order): void {
         const orderId = <?= $order->get_id() ?>;
         const url = 'admin-ajax.php?action=woo_wms_create_order&order_id=' + orderId;
         const originalText = this.textContent;
-        
+
         this.disabled = true;
         this.textContent = 'Creating...';
-        
+
         fetch(url)
           .then(response => response.json())
           .then(res => {
@@ -115,17 +115,17 @@ add_action('woocommerce_shipping_init', 'inpost_shipping_method_init');
  */
 function inpost_shipping_method_init(): void {
   $files = glob(__DIR__ . '/includes/shipping-methods/classes/*.php');
-  
+
   $shipping_classes = array_map(function($file) {
     return basename($file, '.php');
   }, $files);
-  
+
   foreach ($shipping_classes as $shipping_class) {
     if (class_exists($shipping_class)) {
       return;
     }
   }
-  
+
   foreach ($files as $file) {
     require_once $file;
   }
@@ -142,14 +142,14 @@ add_filter('woocommerce_shipping_methods', 'add_shipping_methods' );
  */
 function add_shipping_methods(array $methods): array {
 	$files = glob(__DIR__ . '/includes/shipping-methods/classes/*.php');
-  
+
   foreach ($files as $file) {
     $basename = basename($file, '.php');
     $exploded = explode('_', $basename);
 	  $index = array_pop( $exploded );
     $methods[strtolower($index)] = $basename;
   }
-  
+
 	return $methods;
 }
 
@@ -201,17 +201,17 @@ add_action( 'woocommerce_process_shop_order_meta', 'custom_checkout_update_order
 function custom_checkout_update_order_meta( int $order_id ): void {
 	$order       = wc_get_order( $order_id );
 	$isAddedMeta = false;
-	
+
 	if ( ! empty( $_POST['vat_number'] ) ) {
 		$order->update_meta_data( 'vat_number', sanitize_text_field( $_POST['vat_number'] ) );
 		$isAddedMeta = true;
 	}
-	
+
 	if ( ! empty( $_POST['parcel_machine_id'] ) ) {
 		$order->update_meta_data( 'parcel_machine_id', sanitize_text_field( $_POST['parcel_machine_id'] ) );
 		$isAddedMeta = true;
 	}
-	
+
 	if ( $isAddedMeta ) {
 		$order->save();
 	}
@@ -272,7 +272,7 @@ function add_inpost_geowidget_map(): void {
 				<?= __('Please select a parcel locker location from the map.', 'woo_wms_connector') ?>
       </p>
     </div>
-	  
+
 	  <?php if ( defined( 'WP_ENVIRONMENT_TYPE' ) && 'development' === WP_ENVIRONMENT_TYPE ) : ?>
       <button type="button" id="inpost_geowidget_button">click me</button>
 	  <?php endif; ?>
@@ -309,24 +309,27 @@ function add_inpost_geowidget_map(): void {
               }
           }
 
-          shippingButtons.forEach(function (button) {
-              if (inpostButton.checked) {
-                  geoWidgetWrapper.style.display = 'block';
-                  setActiveInpostParcelId();
-              }
+          inpostButton.checked = true;
+          geoWidgetWrapper.style.display = 'block';
+          setActiveInpostParcelId();
 
-              button.addEventListener('click', function (e) {
-                  if (e.target === inpostButton) {
-                      geoWidgetWrapper.style.display = 'block';
-                      setActiveInpostParcelId();
-                      return null;
-                  }
-                  if ('block' === geoWidgetWrapper.style.display) {
-                      unsetActiveInpostParcelId();
-                      geoWidgetWrapper.style.display = 'none';
-                  }
-              });
+          shippingButtons.forEach(function (button) {
+              document.addEventListener('DOMContentLoaded', function () {
+                button.addEventListener('click', function (e) {
+                    if (e.target === inpostButton) {
+                        geoWidgetWrapper.style.display = 'block';
+                        setActiveInpostParcelId();
+                        return;
+                    }
+
+                    if ('block' === geoWidgetWrapper.style.display) {
+                        unsetActiveInpostParcelId();
+                        geoWidgetWrapper.style.display = 'none';
+                    }
+                });
+              })
           })
+
 
           function handlePointSelection(event) {
               const point = event.detail;
@@ -361,7 +364,7 @@ function add_inpost_geowidget_map(): void {
               geoWidgetInfo.innerHTML = selected_point_data;
               inpostParcelId.value = point.name;
           }
-	      
+
 	      <?php if (defined( 'WP_ENVIRONMENT_TYPE' ) && 'development' === WP_ENVIRONMENT_TYPE) : ?>
           const inpostGeoWidgetButton = document.getElementById('inpost_geowidget_button');
 
@@ -395,11 +398,11 @@ function check_is_parcel_machine_id_required(): void {
 	$shipping_method_id   = WC()->session->get( 'chosen_shipping_methods' )[0];
 	$shipping_instance_id = (int) explode( ':', $shipping_method_id )[1];
 	$shipping_method      = null;
-	
+
 	if ( ! empty( $shipping_instance_id ) ) {
 		$shipping_method = WC_Shipping_Zones::get_shipping_method( $shipping_instance_id );
 	}
-	
+
 	if (
 		$shipping_method
 		&& 'inpost' === $shipping_method->id
@@ -441,7 +444,7 @@ add_action( 'admin_notices', 'update_shop_stocks_button', 20 );
 function update_shop_stocks_button() {
 	// Get the current screen
 	$screen = get_current_screen();
-	
+
 	// Check if we're on the WooCommerce products page
 	if ( $screen && $screen->id === 'edit-product' ) {
 		?>
@@ -512,22 +515,22 @@ function save_custom_order_number( WC_Order $order ): void {
 	$current_time = current_time('timestamp');
 	$month = date('m', $current_time); // Current month
 	$year = date('y', $current_time); // Current year in two digits
-	
+
 	// Get all orders for the current month
 	$args = [
 		'date_created' => '>' . date('Y-m-01 00:00:00', $current_time),
 		'return' => 'ids',
     'limit' => -1
 	];
-	
+
 	$orders_this_month = wc_get_orders($args);
-	
+
 	// Count orders for this month, starting from 10
 	$nn = count($orders_this_month) + 10;
-	
+
 	// Create the custom order number
 	$custom_order_number = sprintf('1%02d%02d%02d', $nn, $month, $year);
-	
+
 	// Save the custom order number as meta data
 	$order->update_meta_data( Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID, $custom_order_number );
   $order->save();
@@ -545,7 +548,7 @@ add_filter('woocommerce_order_number', 'use_custom_order_number_on_frontend', 10
  * @return int|string
  */
 function use_custom_order_number_on_frontend($order_id, $order): int|string {
-  
+
   if ( is_admin()
        && isset($_GET['action'])
        && 'new' === $_GET['action']
@@ -554,7 +557,7 @@ function use_custom_order_number_on_frontend($order_id, $order): int|string {
   ) {
     return __('NEW', 'woo_wms_connector');
   }
-  
+
 	$custom_order_number = $order->get_meta( Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID );
 	return ! empty($custom_order_number) ? $custom_order_number : $order_id;
 }
@@ -573,7 +576,7 @@ add_filter( 'woocommerce_order_table_search_query_meta_keys', 'add_custom_meta_f
 function add_custom_meta_fields_to_search_fields( array $search_fields ): array {
 	// Add the custom meta key to the search fields
 	$search_fields[] = Logicas::$META_WMS_SHOP_CUSTOM_ORDER_ID;
-	
+
 	return $search_fields;
 }
 
@@ -596,7 +599,7 @@ function add_wms_order_status_column( $columns ): array {
 			$new_columns['wms_order_status'] = __( 'WMS status', 'woo_wms_connector' );
 		}
 	}
-	
+
 	return $new_columns;
 }
 
@@ -632,7 +635,7 @@ function update_wms_order_statuses(): void {
   ) {
 		return;
 	}
-	
+
 	?>
   <script>
     document.addEventListener( 'DOMContentLoaded', function () {
@@ -697,19 +700,19 @@ function override_default_product_classes( string $classname, string $product_ty
 	require_once __DIR__ . '/includes/products/classes/Woo_WMS_Product_Variation.php';
 	require_once __DIR__ . '/includes/products/classes/Woo_WMS_Product_Simple.php';
 	require_once __DIR__ . '/includes/products/classes/Woo_WMS_Product_Variable.php';
-	
+
 	if ( 'variation' === $product_type ) {
 		return 'Woo_WMS_Product_Variation';
 	}
-	
+
 	if ( 'simple' === $product_type ) {
 		return 'Woo_WMS_Product_Simple';
 	}
-	
+
 	if ( 'variable' === $product_type ) {
 		return 'Woo_WMS_Product_Variable';
 	}
-	
+
 	return $classname;
 }
 
@@ -726,18 +729,18 @@ add_action('woo_wms_connector_render_manufacturer_field', 'render_manufacturer_f
  */
 function render_manufacturer_field( $loop, $product_id ): void {
 	global $woocommerce_wpml;
-  
+
   $product = wc_get_product( $product_id );
 	$product_type = $product->get_type();
 	$available_types = [ 'simple', 'variable', 'variation' ];
 	$is_loop = -1 < $loop;
-	
+
 	if( false === in_array( $product_type, $available_types ) ) {
 		return;
 	}
   // declare variables used in render_manufacturer_field function
   $product_wms_id = $product->get_wms_id();
-  
+
   ob_start();
 	woocommerce_wp_text_input( [
 		'id'            => $is_loop ? "variation_wms_id[$loop]" : 'wms_id',
@@ -754,22 +757,22 @@ function render_manufacturer_field( $loop, $product_id ): void {
     ]
 	] );
 	$html = ob_get_clean();
-	
+
 	$dom = new DOMDocument();
 	libxml_use_internal_errors( true );
 	$dom->loadHTML( $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 	libxml_clear_errors();
-	
+
 	$wms_id_input       = $dom->getElementById( ( $is_loop ? "variation_wms_id[$loop]" : 'wms_id' ) );
 	$wms_id_input_clone = $wms_id_input->cloneNode( true );
-	
+
   $wms_id_input_wrapper_class = ( $is_loop ? "variation_wms_id_wrapper[$loop]" : 'wms_id__wrapper' );
 	$wms_id_input_wrapper_style = <<<EOF
     position:relative;
     display: block;
   EOF;
 	$wms_id_input_wrapper_style .= ( $is_loop ? '' : 'float: left;' ) . "\n";
-  
+
   $wms_id_input_wrapper = $dom->createElement( 'span' );
 	$wms_id_input_wrapper->setAttribute( 'class', $wms_id_input_wrapper_class );
   $wms_id_input_wrapper->setAttribute( 'style', $wms_id_input_wrapper_style );
@@ -785,7 +788,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
       min-height: unset;
       line-height: 1em;
     ';
-    
+
     $wms_id_delete_button_id = ( $is_loop ? "variation_wms_delete_button[$loop]" : 'wms_delete_button' );
     $wms_id_delete_button = $dom->createElement( 'button' );
     $wms_id_delete_button->setAttribute( 'id', $wms_id_delete_button_id );
@@ -794,16 +797,16 @@ function render_manufacturer_field( $loop, $product_id ): void {
     $wms_id_delete_button->setAttribute( 'type', 'button' );
     $wms_id_delete_button->setAttribute( 'rel', $product->get_wms_id() );
     $wms_id_delete_button->nodeValue = __( 'delete', 'woo_wms_connector' );
-    
+
     $wms_id_input_wrapper->appendChild( $wms_id_delete_button );
   }
-  
+
 	$parent = $wms_id_input->parentNode;
 	$parent->appendChild( $wms_id_input_wrapper );
 	$parent->removeChild( $wms_id_input );
-	
+
 	echo $dom->saveHTML();
-  
+
   /**
    * This "if" block is for adding a delete button to allow user delete a product from WMS
    */
@@ -826,21 +829,21 @@ function render_manufacturer_field( $loop, $product_id ): void {
             In order to delete variations please delete them first.
             TEXT;
             $info_variable = preg_replace("/\r\n|\r|\n/", "\\n", $info_variable);
-            
-            
-            
+
+
+
             $info_single = <<<TEXT
             Be careful!!\n
             Are you sure you want to delete this product from WMS?
             There is no way to undo this action.
             TEXT;
             $info_single = preg_replace("/\r\n|\r|\n/", "\\n", $info_single);
-            
+
             $prompt_proceed_text = __( "Do you want to proceed? Type 'yes' or 'no'", 'woo_wms_connector');
-            
+
             $info_variable .= "\n\n" . $prompt_proceed_text;
             $info_single .= "\n\n" . $prompt_proceed_text;
-            
+
             $info_proceed_deletion = __( sprintf( "Are you sure you want to proceed with deletion of the product with SKU: %s from WMS?", $product->get_sku() ), 'woo_wms_connector');
           ?>
           const info_variable = "<?= __( preg_replace("/\r\n|\r|\n/", "\\n", $info_variable), 'woo_wms_connector' ) ?>";
@@ -849,11 +852,11 @@ function render_manufacturer_field( $loop, $product_id ): void {
           if ( 'yes' !== prompt( hasChild ? info_variable : info_single ).toLowerCase() ) {
             return;
           }
-          
+
           if ( true !== confirm( "<?= $info_proceed_deletion ?>" ) ) {
             return;
           }
-          
+
           const url = 'admin-ajax.php?action=woo_wms_delete_product&productId=<?= $product_id ?>&productWmsId=<?= $product_wms_id ?>';
           fetch( url )
           .then( res => res.json() )
@@ -916,7 +919,7 @@ function render_manufacturer_field( $loop, $product_id ): void {
 		'placeholder'   => '',
 		'value'         => $product->get_wms_name()
 	] );
-	
+
 	woocommerce_wp_select( [
 		'id'            => $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer',
 		'name'          => $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer',
@@ -1017,14 +1020,14 @@ function render_manufacturer_field( $loop, $product_id ): void {
             '<?= ( $is_loop ? "variation_manufacturer[$loop]" : 'manufacturer' ) ?>',
             '<?= ( $is_loop ? "variation_wms_name[$loop]" : 'wms_name' ) ?>'
           ]
-        
+
           const lockerImg = document.querySelector('.wcml_lock_img');
-          
+
           idsToLock.forEach( function ( el ) {
             const lockerImgClone = lockerImg.cloneNode(false);
             lockerImgClone.classList.remove('wcml_lock_img');
             lockerImgClone.style.removeProperty('display');
-            
+
             const domElement = document.getElementById(el);
             domElement.disabled = 'disabled';
             domElement.readOnly = 'readonly';
